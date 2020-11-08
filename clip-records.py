@@ -12,6 +12,7 @@ import hashlib
 import numpy as np
 import matplotlib.pyplot as plt
 import traceback
+import joblib
 from PIL import Image
 from tqdm import tqdm
 from datetime import datetime
@@ -46,6 +47,19 @@ class Movie:
         self.src_movie_path = src_movie_path
         self.skip = skip or 3
         self.records = records
+
+    def isCompltedClip(self):
+        bool = False
+        for record in self.records:
+            dir_path = record.record_dir_format.format(record.name)
+            movie_file_name_without_ext = os.path.splitext(
+                os.path.basename(self.src_movie_path))[0]
+            record_file = os.path.join(
+                dir_path, "{}.txt".format(movie_file_name_without_ext))
+            if os.path.exists(record_file):
+                bool = True
+                break
+        return bool
 
     def crop(self, frame):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -169,7 +183,7 @@ class Record:
             f.write('\n'.join(data))
 
 
-def sample_func(src_movie_path, record_dir_format):
+def process(src_movie_path, record_dir_format):
     try:
         sleep(0.01)
         cp = current_process()
@@ -181,6 +195,9 @@ def sample_func(src_movie_path, record_dir_format):
             record.prepare()
         # map(lambda record: record.prepare(), records)
         movie = Movie(src_movie_path, 3, records)
+        if movie.isCompltedClip():
+            return
+
         movie.capture(pid)
         movie.write_period_to_file()
     except Exception as e:
@@ -199,11 +216,8 @@ def main():
         pbar = tqdm(movies)
         for p in pbar:
             params = [(movie, record_dir_format) for movie in movies]
-            with Pool(processes=4) as pool:
-                results = [pool.apply_async(sample_func, param)
-                           for param in params]
-                for r in results:
-                    print('\t', r.get())  # 必要
+            export_data_list = joblib.Parallel(n_jobs=2)(
+                [joblib.delayed(process)(src_movie_path=param[0], record_dir_format=param[1]) for param in params])
 
 
 if __name__ == "__main__":
