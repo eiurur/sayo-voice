@@ -32,17 +32,38 @@ COMPARE_IMAGE_NAME_FORMAT = "name-{}.png"
 def list_files(dir):
     return [os.path.join(dir, p.name) for p in os.scandir(dir)]
 
+
 def get_filename_without_ext(p):
     return os.path.splitext(os.path.basename(p))[0]
 
+
 def get_filename_and_ext(p):
     return os.path.splitext(os.path.basename(p))
+
 
 class Movie:
     def __init__(self, src_movie_path, skip, records):
         self.src_movie_path = src_movie_path
         self.skip = skip or 3
         self.records = records
+
+    def crop(self, frame):
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        (height, width) = rgb.shape[:2]
+        # print(height, width)
+        """
+        serif = rgb[780:1050, 200:1600]
+        plt.gray()
+        plt.imshow(crop)
+        plt.imshow(serif)
+        plt.show()
+        """
+        if height == 1080 and width == 1920:
+            # 1920 x 1080:  rgb[775:850, 200:660]　, [790:840, 230:350]
+            return rgb[780:850, 230:450]
+        if height == 720 and width == 1280:
+            return rgb[0:0, 0:0]
+        return None
 
     def capture(self, pid):
         cwd = os.getcwd()
@@ -57,27 +78,18 @@ class Movie:
 
         pbar = tqdm(range(start_pos, frame_count, int(fps/fps)))
         for frame_idx in pbar:
-            if frame_idx % self.skip == 0: continue 
+            if frame_idx % self.skip == 0:
+                continue
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             current_pos = str(int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
             ret, frame = cap.read()
             if frame is None:
                 continue
 
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            (height, width) = rgb.shape[:2]
-            if height != 1080 and width != 1920:
+            crop = self.crop(frame)
+            if crop is None:
                 break
 
-            # print(height, width)
-            crop = rgb[780:850, 230:450] # 1920 x 1080:  rgb[775:850, 200:660]　, [790:840, 230:350]
-            """
-            serif = rgb[780:1050, 200:1600]
-            plt.gray()
-            plt.imshow(crop)
-            plt.imshow(serif)
-            plt.show()
-            """
             for record in self.records:
                 record.compare(frame_idx, crop)
         cap.release()
@@ -88,8 +100,10 @@ class Movie:
             hs = hashlib.md5(filename.encode()).hexdigest()
             ascii_filename = "{}{}".format(hs, ext)
             prefix_data = [self.src_movie_path, ascii_filename]
-            movie_file_name_without_ext = os.path.splitext(os.path.basename(self.src_movie_path))[0]
+            movie_file_name_without_ext = os.path.splitext(
+                os.path.basename(self.src_movie_path))[0]
             record.write(prefix_data, movie_file_name_without_ext)
+
 
 class Record:
     def __init__(self, record_dir_format, name, pid):
@@ -98,7 +112,7 @@ class Record:
         self.pid = pid
         self.periods = []
         self.start_frame = -1
-    
+
     def prepare(self):
         dir_path = self.record_dir_format.format(self.name)
         print(dir_path)
@@ -107,8 +121,10 @@ class Record:
 
     def compare(self, frame_idx, crop):
         cwd = os.getcwd()
-        crop_image_path = os.path.join(cwd, 'temp_{}_{}.png'.format(self.name, self.pid))
-        name_image_path = os.path.join(cwd, 'compares', COMPARE_IMAGE_NAME_FORMAT.format(self.name))
+        crop_image_path = os.path.join(
+            cwd, 'temp_{}_{}.png'.format(self.name, self.pid))
+        name_image_path = os.path.join(
+            cwd, 'compares', COMPARE_IMAGE_NAME_FORMAT.format(self.name))
 
         try:
             cv2.imwrite(crop_image_path, crop)
@@ -127,7 +143,8 @@ class Record:
         matches = bf.match(target_des, comparing_des)
         matches = sorted(matches, key=lambda x: x.distance)
         dist = [m.distance for m in matches]
-        if len(dist) == 0: return False
+        if len(dist) == 0:
+            return False
 
         ret = sum(dist) / len(dist)
         # print(" ret - {}: {}".format(self.name, ret))
@@ -142,8 +159,10 @@ class Record:
         if prefix_data is None:
             prefix_data = []
         dir_path = self.record_dir_format.format(self.name)
-        record_file = os.path.join(dir_path, "{}.txt".format(movie_file_name_without_ext))
-        if os.path.exists(record_file): return
+        record_file = os.path.join(
+            dir_path, "{}.txt".format(movie_file_name_without_ext))
+        if os.path.exists(record_file):
+            return
 
         data = prefix_data + self.periods
         with open(record_file, "w", encoding='UTF-8') as f:
@@ -156,7 +175,8 @@ def sample_func(src_movie_path, record_dir_format):
         cp = current_process()
         pid = cp._identity[0]
         print(cp._identity)
-        records = [Record(record_dir_format, name, pid) for name in CHARACTOR_NAMES]
+        records = [Record(record_dir_format, name, pid)
+                   for name in CHARACTOR_NAMES]
         for record in records:
             record.prepare()
         # map(lambda record: record.prepare(), records)
@@ -167,6 +187,7 @@ def sample_func(src_movie_path, record_dir_format):
         print("SAMPLE_FUNC ERROR: ", src_movie_path)
         print(e)
         print(traceback.format_exc())
+
 
 def main():
     cwd = os.getcwd()
@@ -179,9 +200,11 @@ def main():
         for p in pbar:
             params = [(movie, record_dir_format) for movie in movies]
             with Pool(processes=4) as pool:
-                results = [pool.apply_async(sample_func, param) for param in params]
+                results = [pool.apply_async(sample_func, param)
+                           for param in params]
                 for r in results:
-                    print('\t', r.get())
+                    print('\t', r.get())  # 必要
+
 
 if __name__ == "__main__":
     print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
