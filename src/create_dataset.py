@@ -19,7 +19,6 @@ from lib.movie_clipper import MovieClipper
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 OUTPUT_FOLDER_NAME = "inbox"
 CACHE_FILE_NAME = "cache.txt"
-THRESHOLD = 55.0
 JOB_NUM = 2
 SKIP_FRAME_INTEVAL = 180
 

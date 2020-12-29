@@ -93,13 +93,13 @@ def preprocess(classes, train_data):
     print('min:', ml_data_min_num)
 
     class_mapping = {}
-    for label_i, (label, img_file_pathes) in enumerate(train_data.items()):
+    for label_index, (label, img_file_pathes) in enumerate(train_data.items()):
         sample = random.sample(img_file_pathes, ml_data_min_num) 
-        class_mapping[label_i] = label
+        class_mapping[label_index] = label
         for img_file_path in img_file_pathes:
             img = cv2.imread(img_file_path, cv2.IMREAD_GRAYSCALE)
             ml_data.append(img)
-            ml_label.append(label_i)
+            ml_label.append(label_index)
     print(len(ml_data))
     fs.write_json(class_mapping_file_path, class_mapping)
 
@@ -213,7 +213,7 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                         batch_size=BATCH_SIZE,
                         verbose=1,
                         validation_data=(na_data_valid, label_valid_classes),
-                        callbacks=[lr_decay, modelCheckpoint, early_stopping])
+                        callbacks=[lr_decay, modelCheckpoint])
     
     return history, model
 
@@ -229,8 +229,8 @@ def main():
     classes = make_classes(input_data_dir_path)
     train_data = make_train_data(classes)
     ml_data, ml_label = preprocess(classes, train_data)
-
     class_num = len(classes)
+
     (
         na_data_train, na_data_valid, na_data_test,
         label_train_classes, label_valid_classes, label_test_classes
