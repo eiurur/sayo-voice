@@ -45,12 +45,11 @@ def process(src_movie_path):
 
 
 def main():
-    for series_name in CLIP_TARGET_FOLDER_NAMES:
+    for series_name in tqdm(CLIP_TARGET_FOLDER_NAMES):
         movie_pathes = fs.list_files(os.path.join(movie_dir, series_name))
-        pbar = tqdm(movie_pathes)
-        for p in pbar:
-            export_data_list = joblib.Parallel(n_jobs=JOB_NUM)(
-                [joblib.delayed(process)(src_movie_path=movie_path) for movie_path in movie_pathes])
+        joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
+            src_movie_path=movie_path
+        ) for movie_path in movie_pathes])
 
 
 if __name__ == "__main__":
