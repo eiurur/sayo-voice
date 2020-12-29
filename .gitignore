@@ -3,6 +3,7 @@
 **/*.png
 temp*.png
 records/**
+model/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -168,6 +169,7 @@ notebook/static/lab/*bundle.js
 node_modules
 *.py[co]
 __pycache__
+**/*.pyc
 *.egg-info
 *~
 *.bak
