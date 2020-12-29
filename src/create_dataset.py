@@ -23,9 +23,9 @@ JOB_NUM = 2
 SKIP_FRAME_INTEVAL = 180
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
-output_dir = os.path.join(cwd, "00.dataset")
-cache_filepath = os.path.join(output_dir, CACHE_FILE_NAME)
-clip_output_dir = os.path.join(output_dir, OUTPUT_FOLDER_NAME)
+resource_dir = os.path.join(cwd, "00.dataset")
+cache_filepath = os.path.join(resource_dir, CACHE_FILE_NAME)
+clip_output_dir = os.path.join(resource_dir, OUTPUT_FOLDER_NAME)
 movie_dir = os.path.join(cwd.parent, 'movies')
 
 def process(src_movie_path):
@@ -45,8 +45,6 @@ def process(src_movie_path):
 
 
 def main():
-    print(cwd)
-
     for series_name in CLIP_TARGET_FOLDER_NAMES:
         movie_pathes = fs.list_files(os.path.join(movie_dir, series_name))
         pbar = tqdm(movie_pathes)
