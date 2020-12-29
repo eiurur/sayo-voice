@@ -39,7 +39,7 @@ def process(src_movie_path):
         movie_clipper.capture(pid)
         movie_clipper.caching_to(cache_filepath)
     except Exception as e:
-        print("SAMPLE_FUNC ERROR: ", src_movie_path)
+        print("process ERROR: ", src_movie_path)
         print(e)
         print(traceback.format_exc())
 
