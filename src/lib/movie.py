@@ -3,7 +3,8 @@ import hashlib
 import os
 from tqdm import tqdm
 
-import fs
+from . import fs
+from .image import Image
 
 class Movie:
     def __init__(self, src_movie_path, skip, records):
@@ -14,7 +15,7 @@ class Movie:
     def isCompltedClip(self):
         bool = False
         for record in self.records:
-            dir_path = record.record_dir_format.format(record.label_name)
+            dir_path = record.dir_format.format(record.get_label_name())
             movie_file_name_without_ext = fs.get_filename_without_ext(self.src_movie_path)
             record_file = os.path.join(dir_path, "{}.txt".format(movie_file_name_without_ext))
             if os.path.exists(record_file):
@@ -55,8 +56,10 @@ class Movie:
             if crop is None:
                 break
 
+            image = Image()
+            image.set_image(crop)
             for record in self.records:
-                record.compare(frame_idx, crop)
+                record.compare(frame_idx, image)
         cap.release()
 
     def write_period_to_file(self):

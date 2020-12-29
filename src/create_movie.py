@@ -20,7 +20,7 @@ JOB_NUM = 3
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 movie_dir = os.path.join(cwd.parent, 'movies')
-record_dir = os.path.join(cwd, "02.clip", "records")
+record_dir = os.path.join(cwd, "02.record", "records")
 crop_dir = os.path.join(cwd, "03.movie", "crop_movies")
 tmp_dir = os.path.join(cwd, "03.movie", "crop_tmp")
 
