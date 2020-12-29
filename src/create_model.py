@@ -30,13 +30,14 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningR
 from lib import fs
 from lib.image import Image
 
+
 IMAGE_SIZE_PX = 112
 BATCH_SIZE = 12
 EPOCHS = 50
 LEARNING_RATE = 0.0001
 TRAIN_DATA_SIZE_RATIO = 0.7
-TEST_DATA_SIZE_RATIO = 0.3
-VALID_DATA_SIZE_RATIO = 0.5 # NOTE: 指定の比率でTEST_DATA_SIZE_RATIOを分割する。t:0.3,v:0.6なら全体の0.18
+VALID_DATA_SIZE_RATIO = 0.3
+TEST_DATA_SIZE_RATIO = 0.3 # NOTE: 指定の比率でVALID_DATA_SIZE_RATIOを分割する。v:0.7,t:0.3なら全体の0.09
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "01.model")
@@ -47,6 +48,7 @@ model_file_path = os.path.join(cwd.parent, "model", "dnn_model.h5")
 checkpoint_file_path = os.path.join(cwd.parent, "model", "dnn_checkpoint.h5")
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
 
 def make_classes(dir):
     dirs = [os.path.join(dir, p.name) for p in os.scandir(dir)]
@@ -80,10 +82,12 @@ def make_train_data(classes):
             ret[c["name"]].append(dst_filepath)
     return ret
 
+
 def preprocess(classes, train_data):
     ml_data = []
     ml_label = []
-    ml_data_min_num = 1001001 # データの偏りをなくすため少ない方に合わせる。
+    ml_data_min_num = 1001001 # NOTE: データの偏りをなくすため少ない方に合わせる。
+
     for label, img_file_pathes in train_data.items():
         ml_data_min_num = min(ml_data_min_num, len(img_file_pathes))
     print('min:', ml_data_min_num)
@@ -92,17 +96,17 @@ def preprocess(classes, train_data):
     for label_i, (label, img_file_pathes) in enumerate(train_data.items()):
         sample = random.sample(img_file_pathes, ml_data_min_num) 
         class_mapping[label_i] = label
-        for i, img_file_path in enumerate(img_file_pathes):
+        for img_file_path in img_file_pathes:
             img = cv2.imread(img_file_path, cv2.IMREAD_GRAYSCALE)
             ml_data.append(img)
             ml_label.append(label_i)
     print(len(ml_data))
     fs.write_json(class_mapping_file_path, class_mapping)
+
     return ml_data, ml_label
 
 
 def create_model(class_num):
-
     model = Sequential()
     model.add(Conv2D(math.floor(IMAGE_SIZE_PX/4), kernel_size=(3, 3), input_shape=(IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)))
     model.add(Activation('relu'))
@@ -128,7 +132,7 @@ def create_model(class_num):
 
     return model
 
-# 学習率
+
 def step_decay(epoch):
     lr = 0.001
     if epoch >= 25: lr /= 5
@@ -136,13 +140,15 @@ def step_decay(epoch):
     if epoch >= 100: lr /= 2
     return lr
 
+
 def setup(class_num, ml_data, ml_label):
-    data_train, _data_test, label_train, _label_test = train_test_split(ml_data, ml_label, test_size=TEST_DATA_SIZE_RATIO, train_size=TRAIN_DATA_SIZE_RATIO)
-    data_test, data_valid, label_test, label_valid = train_test_split(_data_test, _label_test, test_size=VALID_DATA_SIZE_RATIO)
+    data_train, _data_valid, label_train, _label_valid = train_test_split(ml_data, ml_label, test_size=VALID_DATA_SIZE_RATIO, train_size=TRAIN_DATA_SIZE_RATIO)
+    data_valid, data_test, label_valid, label_test = train_test_split(_data_valid, _label_valid, test_size=TEST_DATA_SIZE_RATIO)
 
     na_data_train = np.array(data_train)
     na_data_valid = np.array(data_valid)
     na_data_test = np.array(data_test)
+
     na_label_train = np.array(label_train)
     na_label_valid = np.array(label_valid)
     na_label_test = np.array(label_test)
@@ -151,12 +157,17 @@ def setup(class_num, ml_data, ml_label):
     na_data_train = na_data_train.reshape(na_data_train.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1) # 2次元配列を1次元に変換
     na_data_valid = na_data_valid.reshape(na_data_valid.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
     na_data_test = na_data_test.reshape(na_data_test.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
-    na_data_train = na_data_train.astype('float32')   # int型をfloat32型に変換
+
+    # int型をfloat32型に変換
+    na_data_train = na_data_train.astype('float32')
     na_data_valid = na_data_valid.astype('float32')
     na_data_test = na_data_test.astype('float32')
-    na_data_train /= 255                        # [0-255]の値を[0.0-1.0]に変換
+
+    # [0-255]の値を[0.0-1.0]に変換
+    na_data_train /= 255
     na_data_valid /= 255
     na_data_test /= 255
+
     print(na_data_train.shape[0], 'train samples')
     print(na_data_valid.shape[0], 'valid samples')
     print(na_data_test.shape[0], 'test samples')
@@ -169,6 +180,7 @@ def setup(class_num, ml_data, ml_label):
         na_data_train, na_data_valid, na_data_test,
         label_train_classes, label_valid_classes, label_test_classes
     )
+
 
 def train(class_num, na_data_train, na_data_valid, label_train_classes, label_valid_classes):
 
@@ -201,15 +213,17 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                         batch_size=BATCH_SIZE,
                         verbose=1,
                         validation_data=(na_data_valid, label_valid_classes),
-                        callbacks=[lr_decay, modelCheckpoint])
+                        callbacks=[lr_decay, modelCheckpoint, early_stopping])
     
     return history, model
+
 
 def evaluate(model, na_data_test, label_test_classes):
     score = model.evaluate(na_data_test, label_test_classes, verbose=0)
     print('Test Loss:', score[0])
     print('Test Accuracy:', score[1])
     return score
+
 
 def main():
     classes = make_classes(input_data_dir_path)
@@ -224,6 +238,7 @@ def main():
     history, model = train(class_num, na_data_train, na_data_valid, label_train_classes, label_valid_classes)
     loss, acc = evaluate(model, na_data_test, label_test_classes)
     model.save(model_file_path, include_optimizer=False)
+
 
 if __name__ == "__main__":
     print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

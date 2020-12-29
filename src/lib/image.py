@@ -2,6 +2,7 @@
 import cv2
 import os
 
+
 class Image:
     def __init__(self):
         self.im = None

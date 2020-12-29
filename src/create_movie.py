@@ -14,6 +14,7 @@ from pathlib import Path
 from lib import fs
 from lib.image import Image
 
+
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 JOB_NUM = 3
 
@@ -22,6 +23,7 @@ movie_dir = os.path.join(cwd.parent, 'movies')
 record_dir = os.path.join(cwd, "02.clip", "records")
 crop_dir = os.path.join(cwd, "03.movie", "crop_movies")
 tmp_dir = os.path.join(cwd, "03.movie", "crop_tmp")
+
 
 def clip_movie(movie_file_path, clips, dst):
     print(movie_file_path, clips, dst)
@@ -34,6 +36,7 @@ def clip_movie(movie_file_path, clips, dst):
         clipsArray.append(clip)
     final = concatenate_videoclips(clipsArray)
     final.write_videofile(dst, fps=video.fps, codec='libx264', audio_codec="aac")
+
 
 def process(src_record_path, chara_crop_dir, chara_tmp_dir):
     try:
@@ -58,6 +61,7 @@ def process(src_record_path, chara_crop_dir, chara_tmp_dir):
         print(e)
         print(traceback.format_exc())
 
+
 def prepare(charactor_name, series_name):
     chara_crop_dir = os.path.join(crop_dir, charactor_name, series_name)
     if not os.path.exists(chara_crop_dir):
@@ -69,6 +73,7 @@ def prepare(charactor_name, series_name):
 
     return chara_crop_dir, chara_tmp_dir
     
+
 def main():
     for series_name in CLIP_TARGET_FOLDER_NAMES:
         charactor_dirs = fs.list_dirs(record_dir)

@@ -15,6 +15,7 @@ from lib import fs
 from lib.image import Image
 from lib.movie_clipper import MovieClipper
 
+
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 OUTPUT_FOLDER_NAME = "inbox"
 CACHE_FILE_NAME = "cache.txt"
@@ -27,6 +28,7 @@ resource_dir = os.path.join(cwd, "00.dataset")
 cache_filepath = os.path.join(resource_dir, CACHE_FILE_NAME)
 clip_output_dir = os.path.join(resource_dir, OUTPUT_FOLDER_NAME)
 movie_dir = os.path.join(cwd.parent, 'movies')
+
 
 def process(src_movie_path):
     try:
