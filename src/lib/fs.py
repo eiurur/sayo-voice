@@ -7,6 +7,8 @@ from time import localtime
 def list_files(dir):
     return [os.path.join(dir, p.name) for p in os.scandir(dir)]
 
+def get_filename(p):
+    return os.path.basename(p)
 
 def get_filename_without_ext(p):
     return os.path.splitext(os.path.basename(p))[0]

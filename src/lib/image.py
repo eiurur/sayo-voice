@@ -38,6 +38,5 @@ class Image:
         self.im = cv2.copyMakeBorder(self.im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
 
     def transform_image_for_predict_with(self, px):
-        _im = self.resize_sqaure_with_padding(self.im)
-        _im = cv2.resize(_im, dsize=(px, px))
-        self.im = _im
+        self.resize_sqaure_with_padding()
+        self.im = cv2.resize(self.im, dsize=(px, px))

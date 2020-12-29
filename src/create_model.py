@@ -14,7 +14,6 @@ import traceback
 import joblib
 import subprocess
 import json
-import pprint
 import random
 from PIL import Image
 from tqdm import tqdm
@@ -44,33 +43,18 @@ from lib.image import Image
 IMAGE_SIZE_PX = 112
 BATCH_SIZE = 12
 EPOCHS = 50
+LEARNING_RATE = 0.0001
+TRAIN_DATA_SIZE_RATIO = 0.7
+TEST_DATA_SIZE_RATIO = 0.3
+VALID_DATA_SIZE_RATIO = 0.5 # NOTE: 指定の比率でTEST_DATA_SIZE_RATIOを分割する。t:0.3,v:0.6なら全体の0.18
 
-print(tf.__version__)
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
-resource_data_dir_path = os.path.join(cwd, "resources")
-train_data_dir_path = os.path.join(cwd, "train")
+resource_dir = os.path.join(cwd, "01.model")
+input_data_dir_path = os.path.join(resource_dir, "input")
+train_data_dir_path = os.path.join(resource_dir, "train")
 class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json")
 model_file_path = os.path.join(cwd.parent, "model", "dnn_model.h5")
-
-DEFAULT_ATTRIBUTES = (
-    'index',
-    'uuid',
-    'name',
-    'timestamp',
-    'memory.total',
-    'memory.free',
-    'memory.used',
-    'utilization.gpu',
-    'utilization.memory'
-)
-def get_gpu_info(nvidia_smi_path='nvidia-smi', keys=DEFAULT_ATTRIBUTES, no_units=True):
-    nu_opt = '' if not no_units else ',nounits'
-    cmd = '%s --query-gpu=%s --format=csv,noheader%s' % (nvidia_smi_path, ','.join(keys), nu_opt)
-    output = subprocess.check_output(cmd, shell=True)
-    lines = output.decode().split('\n')
-    lines = [ line.strip() for line in lines if line.strip() != '' ]
-
-    return [ { k: v for k, v in zip(keys, line.split(', ')) } for line in lines ]
+checkpoint_file_path = os.path.join(cwd.parent, "model", "dnn_checkpoint.h5")
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
@@ -100,7 +84,7 @@ def make_train_data(classes):
             image = Image()
             image.load_image_from_filepath(filepath)
             image.transform_image_for_predict_with(IMAGE_SIZE_PX)
-            dst_filepath = os.path.join(class_dir_path, get_filename(filepath))
+            dst_filepath = os.path.join(class_dir_path, fs.get_filename(filepath))
             image.write_to(dst_filepath)
             print(dst_filepath)
             ret[c["name"]].append(dst_filepath)
@@ -128,7 +112,6 @@ def preprocess(classes, train_data):
 
 
 def create_model(class_num):
-    pprint.pprint(get_gpu_info())
 
     model = Sequential()
     model.add(Conv2D(math.floor(IMAGE_SIZE_PX/4), kernel_size=(3, 3), input_shape=(IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)))
@@ -164,11 +147,8 @@ def step_decay(epoch):
     return lr
 
 def setup(class_num, ml_data, ml_label):
-    train_size = 0.7
-    test_size = 0.3
-    data_train, _data_test, label_train, _label_test = train_test_split(ml_data, ml_label, test_size=test_size, train_size=train_size)
-    valid_size = 0.7
-    data_test, data_valid, label_test, label_valid = train_test_split(_data_test, _label_test, test_size=valid_size)
+    data_train, _data_test, label_train, _label_test = train_test_split(ml_data, ml_label, test_size=TEST_DATA_SIZE_RATIO, train_size=TRAIN_DATA_SIZE_RATIO)
+    data_test, data_valid, label_test, label_valid = train_test_split(_data_test, _label_test, test_size=VALID_DATA_SIZE_RATIO)
 
     na_data_train = np.array(data_train)
     na_data_valid = np.array(data_valid)
@@ -213,7 +193,7 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
         patience=2
     )
 
-    modelCheckpoint = ModelCheckpoint(filepath = 'dnn_checkpoint.h5',
+    modelCheckpoint = ModelCheckpoint(filepath = checkpoint_file_path,
                                       monitor='val_loss',
                                       verbose=1,
                                       save_best_only=True,
@@ -222,7 +202,7 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                                       period=1)
 
     # adam = Adam(lr=0.0001)
-    sdg = keras.optimizers.SGD(lr=0.0001, momentum=0.9, decay=1e-4, nesterov=False)
+    sdg = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=0.9, decay=1e-4, nesterov=False)
     model.compile(loss='categorical_crossentropy',
                   optimizer=sdg,
                   metrics=['accuracy']) 
@@ -242,8 +222,7 @@ def evaluate(model, na_data_test, label_test_classes):
     return score
 
 def main():
-    print(cwd)
-    classes = make_classes(resource_data_dir_path)
+    classes = make_classes(input_data_dir_path)
     train_data = make_train_data(classes)
     ml_data, ml_label = preprocess(classes, train_data)
 
