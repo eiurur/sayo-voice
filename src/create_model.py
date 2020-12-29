@@ -6,36 +6,26 @@ import sys
 import cv2
 import os
 import math
-import glob
-import hashlib
 import numpy as np
-import matplotlib.pyplot as plt
 import traceback
 import joblib
-import subprocess
 import json
 import random
-from PIL import Image
 from tqdm import tqdm
 from datetime import datetime
 from time import sleep
 from multiprocessing import current_process, Pool, Process
 from sklearn.model_selection import train_test_split
-from hashlib import md5
-from time import localtime
 from pathlib import Path
-from numba import cuda
 
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, BatchNormalization, Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D
-from tensorflow.keras.optimizers import RMSprop, SGD, Adam
+from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.initializers import he_normal, TruncatedNormal, Constant
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 from lib import fs
 from lib.image import Image
