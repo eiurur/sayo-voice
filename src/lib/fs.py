@@ -4,11 +4,14 @@ import json
 from hashlib import md5
 from time import localtime
 
+
 def list_files(dir):
     return [os.path.join(dir, p.name) for p in os.scandir(dir)]
 
+
 def list_dirs(dir):
     return [p.name for p in os.scandir(dir) if os.path.isdir(os.path.join(dir, p.name))]
+
 
 def get_filename(p):
     return os.path.basename(p)
