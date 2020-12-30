@@ -6,6 +6,7 @@ from tqdm import tqdm
 from . import fs
 from .image import Image
 
+
 class Movie:
     def __init__(self, src_movie_path, skip, records):
         self.src_movie_path = src_movie_path
@@ -42,7 +43,7 @@ class Movie:
 
         start_pos = 0  # fps:  fps * (60 * 20) .. 20分
 
-        pbar = tqdm(range(start_pos, frame_count, int(fps/fps)))
+        pbar = tqdm(range(start_pos, frame_count, int(fps / fps)))
         for frame_idx in pbar:
             if frame_idx % self.skip != 0:
                 continue

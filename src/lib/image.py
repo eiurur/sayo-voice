@@ -8,8 +8,8 @@ class Image:
         self.im = None
 
     def set_image(self, im):
-        self.im =im
-        
+        self.im = im
+
     def get_image(self):
         return self.im
 

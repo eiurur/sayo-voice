@@ -19,16 +19,17 @@ CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 JOB_NUM = 3
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
+resource_dir = os.path.join(cwd, "03.movie")
+crop_dir = os.path.join(resource_dir, "crop_movies")
+tmp_dir = os.path.join(resource_dir, "crop_tmp")
 movie_dir = os.path.join(cwd.parent, 'movies')
 record_dir = os.path.join(cwd, "02.record", "records")
-crop_dir = os.path.join(cwd, "03.movie", "crop_movies")
-tmp_dir = os.path.join(cwd, "03.movie", "crop_tmp")
 
 
 def clip_movie(movie_file_path, clips, dst):
     print(movie_file_path, clips, dst)
     video = VideoFileClip(movie_file_path)
-    clipsArray = [] 
+    clipsArray = []
     for clip in clips:
         [startTime, endTime] = list(map(int, clip.split('-')))
         print(startTime, endTime)
@@ -38,6 +39,7 @@ def clip_movie(movie_file_path, clips, dst):
     final.write_videofile(dst, fps=video.fps, codec='libx264', audio_codec="aac")
     video.close()
 
+
 def process(src_record_path, chara_crop_dir, chara_tmp_dir):
     try:
         with open(src_record_path, encoding='UTF-8') as f:
@@ -46,11 +48,11 @@ def process(src_record_path, chara_crop_dir, chara_tmp_dir):
             movie_encoded_file_name = lines[1].strip()
 
             clips = list(map(lambda x: x.strip(), lines[2:]))
-            if len(clips) == 0: 
+            if len(clips) == 0:
                 return
 
             dst = os.path.join(chara_crop_dir, movie_encoded_file_name)
-            if os.path.exists(dst): 
+            if os.path.exists(dst):
                 return
 
             tmp_file_path = os.path.join(chara_tmp_dir, movie_encoded_file_name)
@@ -72,7 +74,7 @@ def prepare(charactor_name, series_name):
         os.makedirs(chara_tmp_dir, exist_ok=True)
 
     return chara_crop_dir, chara_tmp_dir
-    
+
 
 def main():
     for series_name in CLIP_TARGET_FOLDER_NAMES:
@@ -92,4 +94,3 @@ if __name__ == "__main__":
     print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     main()
     print('finished')
-    

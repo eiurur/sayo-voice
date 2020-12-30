@@ -5,12 +5,13 @@ from tqdm import tqdm
 
 from . import fs
 
+
 class MovieClipper:
     def __init__(self, src_movie_path, skip, pid):
         self.src_movie_path = src_movie_path
         self.skip = skip or 3
         self.pid = pid
-        
+
     @property
     def output_dir(self):
         pass
@@ -30,7 +31,7 @@ class MovieClipper:
     def isCompltedClip(self, cache_filepath):
         bool = False
 
-        if not os.path.isfile(cache_filepath): 
+        if not os.path.isfile(cache_filepath):
             return bool
 
         with open(cache_filepath) as f:
@@ -40,7 +41,7 @@ class MovieClipper:
                 bool = True
 
         return bool
-        
+
     def crop_name_area(self, frame):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         (height, width) = rgb.shape[:2]
@@ -70,17 +71,20 @@ class MovieClipper:
 
         start_pos = 0  # fps:  fps * (60 * 20) .. 20分
 
-        pbar = tqdm(range(start_pos, frame_count, int(fps/fps)))
+        pbar = tqdm(range(start_pos, frame_count, int(fps / fps)))
         for frame_idx in pbar:
-            if frame_idx % self.skip != 0: continue
+            if frame_idx % self.skip != 0:
+                continue
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             current_pos = str(int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
             ret, frame = cap.read()
-            if frame is None: continue
+            if frame is None:
+                continue
 
             crop = self.crop_name_area(frame)
-            if crop is None: break
+            if crop is None:
+                break
 
             self.clip_frame(frame_idx, crop)
         cap.release()

@@ -37,7 +37,7 @@ EPOCHS = 50
 LEARNING_RATE = 0.0001
 TRAIN_DATA_SIZE_RATIO = 0.7
 VALID_DATA_SIZE_RATIO = 0.3
-TEST_DATA_SIZE_RATIO = 0.3 # NOTE: 指定の比率でVALID_DATA_SIZE_RATIOを分割する。v:0.7,t:0.3なら全体の0.09
+TEST_DATA_SIZE_RATIO = 0.3  # NOTE: 指定の比率でVALID_DATA_SIZE_RATIOを分割する。valid:0.3, test:0.3なら全体の0.09。
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "01.model")
@@ -56,7 +56,7 @@ def make_classes(dir):
     for d in dirs:
         class_pathes += [os.path.join(d, p.name) for p in os.scandir(d)]
     ret = []
-    for class_path in class_pathes: 
+    for class_path in class_pathes:
         ret.append({
             "name": os.path.basename(os.path.normpath(class_path)),
             "path": class_path
@@ -86,7 +86,7 @@ def make_train_data(classes):
 def preprocess(classes, train_data):
     ml_data = []
     ml_label = []
-    ml_data_min_num = 1001001 # NOTE: データの偏りをなくすため少ない方に合わせる。
+    ml_data_min_num = 1001001  # NOTE: データの偏りをなくすため少ない方に合わせる。
 
     for label, img_file_pathes in train_data.items():
         ml_data_min_num = min(ml_data_min_num, len(img_file_pathes))
@@ -94,7 +94,7 @@ def preprocess(classes, train_data):
 
     class_mapping = {}
     for label_index, (label, img_file_pathes) in enumerate(train_data.items()):
-        sample = random.sample(img_file_pathes, ml_data_min_num) 
+        sample = random.sample(img_file_pathes, ml_data_min_num)
         class_mapping[label_index] = label
         for img_file_path in img_file_pathes:
             img = cv2.imread(img_file_path, cv2.IMREAD_GRAYSCALE)
@@ -108,15 +108,15 @@ def preprocess(classes, train_data):
 
 def create_model(class_num):
     model = Sequential()
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX/4), kernel_size=(3, 3), input_shape=(IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)))
+    model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 4), kernel_size=(3, 3), input_shape=(IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX/2), (3, 3)))
+    model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 2), (3, 3)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX/2), (3, 3)))
+    model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 2), (3, 3)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -127,7 +127,7 @@ def create_model(class_num):
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(math.floor(IMAGE_SIZE_PX/2), activation='relu'))
+    model.add(Dense(math.floor(IMAGE_SIZE_PX / 2), activation='relu'))
     model.add(Dense(class_num, activation='softmax'))
 
     return model
@@ -135,9 +135,12 @@ def create_model(class_num):
 
 def step_decay(epoch):
     lr = 0.001
-    if epoch >= 25: lr /= 5
-    if epoch >= 50: lr /= 5
-    if epoch >= 100: lr /= 2
+    if epoch >= 25:
+        lr /= 5
+    if epoch >= 50:
+        lr /= 5
+    if epoch >= 100:
+        lr /= 2
     return lr
 
 
@@ -154,7 +157,7 @@ def setup(class_num, ml_data, ml_label):
     na_label_test = np.array(label_test)
 
     print(na_data_train.shape, na_data_train[0].shape)
-    na_data_train = na_data_train.reshape(na_data_train.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1) # 2次元配列を1次元に変換
+    na_data_train = na_data_train.reshape(na_data_train.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)  # 2次元配列を1次元に変換
     na_data_valid = na_data_valid.reshape(na_data_valid.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
     na_data_test = na_data_test.reshape(na_data_test.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
 
@@ -195,7 +198,7 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
         patience=2
     )
 
-    modelCheckpoint = ModelCheckpoint(filepath = checkpoint_file_path,
+    modelCheckpoint = ModelCheckpoint(filepath=checkpoint_file_path,
                                       monitor='val_loss',
                                       verbose=1,
                                       save_best_only=True,
@@ -207,14 +210,14 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
     sdg = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=0.9, decay=1e-4, nesterov=False)
     model.compile(loss='categorical_crossentropy',
                   optimizer=sdg,
-                  metrics=['accuracy']) 
+                  metrics=['accuracy'])
     history = model.fit(na_data_train, label_train_classes,
                         epochs=EPOCHS,
                         batch_size=BATCH_SIZE,
                         verbose=1,
                         validation_data=(na_data_valid, label_valid_classes),
                         callbacks=[lr_decay, modelCheckpoint])
-    
+
     return history, model
 
 
@@ -234,7 +237,7 @@ def main():
     (
         na_data_train, na_data_valid, na_data_test,
         label_train_classes, label_valid_classes, label_test_classes
-    ) = setup(class_num,  ml_data, ml_label)
+    ) = setup(class_num, ml_data, ml_label)
     history, model = train(class_num, na_data_train, na_data_valid, label_train_classes, label_valid_classes)
     loss, acc = evaluate(model, na_data_test, label_test_classes)
     model.save(model_file_path, include_optimizer=False)

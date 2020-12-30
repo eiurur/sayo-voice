@@ -29,10 +29,10 @@ IMAGE_SIZE_PX = 112
 SKIP_FRAME_INTEVAL = 4
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
+resource_dir = os.path.join(cwd, "02.record")
 movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json")
 model_file_path = os.path.join(cwd.parent, "model", "dnn_model.h5")
-resource_dir = os.path.join(cwd, "02.record")
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 model = keras.models.load_model(model_file_path, compile=False)
@@ -70,8 +70,8 @@ def main():
         movies = fs.list_files(os.path.join(movie_dir, series_name))
         params = [(movie, record_dir_format) for movie in movies]
         joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
-            src_movie_path=param[0], 
-            record_dir_format=param[1], 
+            src_movie_path=param[0],
+            record_dir_format=param[1],
             class_mapping=class_mapping
         ) for param in params])
 
