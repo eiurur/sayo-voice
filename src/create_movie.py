@@ -36,7 +36,7 @@ def clip_movie(movie_file_path, clips, dst):
         clipsArray.append(clip)
     final = concatenate_videoclips(clipsArray)
     final.write_videofile(dst, fps=video.fps, codec='libx264', audio_codec="aac")
-
+    video.close()
 
 def process(src_record_path, chara_crop_dir, chara_tmp_dir):
     try:
