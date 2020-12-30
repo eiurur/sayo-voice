@@ -2,19 +2,11 @@
 # coding: utf-8
 
 
-import sys
 import cv2
 import os
 import math
 import numpy as np
-import traceback
-import joblib
-import json
-import random
-from tqdm import tqdm
 from datetime import datetime
-from time import sleep
-from multiprocessing import current_process, Pool, Process
 from sklearn.model_selection import train_test_split
 from pathlib import Path
 
@@ -22,7 +14,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, BatchNormalization, Dense, Dropout, Flatten
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, GlobalAveragePooling2D
+from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.initializers import he_normal, TruncatedNormal, Constant
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler
@@ -94,7 +86,7 @@ def preprocess(classes, train_data):
 
     class_mapping = {}
     for label_index, (label, img_file_pathes) in enumerate(train_data.items()):
-        sample = random.sample(img_file_pathes, ml_data_min_num)
+        # sample = random.sample(img_file_pathes, ml_data_min_num)
         class_mapping[label_index] = label
         for img_file_path in img_file_pathes:
             img = cv2.imread(img_file_path, cv2.IMREAD_GRAYSCALE)
@@ -108,6 +100,7 @@ def preprocess(classes, train_data):
 
 def create_model(class_num):
     model = Sequential()
+
     model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 4), kernel_size=(3, 3), input_shape=(IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
@@ -207,7 +200,7 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                                       period=1)
 
     # adam = Adam(lr=0.0001)
-    sdg = keras.optimizers.SGD(lr=LEARNING_RATE, momentum=0.9, decay=1e-4, nesterov=False)
+    sdg = SGD(lr=LEARNING_RATE, momentum=0.9, decay=1e-4, nesterov=False)
     model.compile(loss='categorical_crossentropy',
                   optimizer=sdg,
                   metrics=['accuracy'])
