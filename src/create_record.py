@@ -16,10 +16,10 @@ import tensorflow as tf
 from tensorflow import keras
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
-JOB_NUM = 4
-THRESHOLD = 90.0
+JOB_NUM = 6
+THRESHOLD = 95.0
 IMAGE_SIZE_PX = 112
-SKIP_FRAME_INTEVAL = 4
+SKIP_FRAME_INTEVAL = 3
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "02.record")
@@ -60,7 +60,7 @@ def main():
     class_mapping = fs.load_json(class_mapping_file_path)
     for series_name in CLIP_TARGET_FOLDER_NAMES:
         record_dir_format = os.path.join(resource_dir, "records", "{}", series_name)
-        movies = fs.list_files(os.path.join(movie_dir, series_name))
+        movies = fs.list_entries(os.path.join(movie_dir, series_name))
         params = [(movie, record_dir_format) for movie in movies]
         joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
             src_movie_path=param[0],

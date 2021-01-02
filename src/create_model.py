@@ -61,7 +61,7 @@ def make_train_data(classes):
     ret = {}
     for c in classes:
         ret[c["name"]] = []
-        img_file_pathes = fs.list_files(c["path"])
+        img_file_pathes = fs.list_entries(c["path"])
         class_dir_path = os.path.join(train_data_dir_path, c["name"])
         os.makedirs(class_dir_path, exist_ok=True)
         for filepath in img_file_pathes:
