@@ -14,11 +14,11 @@ class Record:
 
     @property
     def dir_format(self):
-        pass
+        return self.__dir_format
 
     @property
     def label(self):
-        pass
+        return self.__label
 
     @property
     def model(self):
@@ -60,14 +60,6 @@ class Record:
     def px(self, px):
         self.__px = px
 
-    @dir_format.getter
-    def dir_format(self):
-        return self.__dir_format
-
-    @label.getter
-    def label(self):
-        return self.__label
-
     def get_label_index(self):
         index, name = self.__label
         return index
@@ -106,35 +98,12 @@ class Record:
         if self.start_frame == -1 and (pred_proba >= self.__threshold and str(self.get_label_index()) == str(pred_class)):
             self.start_frame = frame_idx
             print(self.get_label_name(), pred_class, pred_proba)
-            # self.debug_image(im, f"{frame_idx}_{pred_class}_{pred_proba}.jpg")
         elif self.start_frame != -1 and (pred_proba < self.__threshold or str(self.get_label_index()) != str(pred_class)):
             end_frame = frame_idx - self.__skip_frame_interval
             self.periods.append("{}-{}".format(self.start_frame, end_frame))
             self.start_frame = -1
             print(self.get_label_name(), pred_class, pred_proba)
             print(self.periods)
-
-    """
-    def compare(self, frame_idx, crop_im):
-        try:
-            crop_im.transform_image_for_predict_with(self.__px)
-            pred_class, pred_proba = self.predict(crop_im.get_image())
-        except Exception as e:
-            print(traceback.format_exc())
-            return False
-
-        if self.start_frame == -1 and (pred_proba >= self.__threshold and str(self.get_label_index()) == str(pred_class)):
-            self.start_frame = frame_idx
-            print(pred_class, pred_proba)
-            self.debug_image(crop_im, f"{frame_idx}_{pred_class}_{pred_proba}.jpg")
-        elif self.start_frame != -1 and (pred_proba < self.__threshold or str(self.get_label_index()) != str(pred_class)):
-            end_frame = frame_idx
-            self.periods.append("{}-{}".format(self.start_frame, end_frame))
-            self.start_frame = -1
-            print(pred_class, pred_proba)
-            print(self.get_label_name(), self.periods)
-            self.debug_image(crop_im, f"{frame_idx}_{pred_class}_{pred_proba}.jpg")
-    """
 
     def debug_image(self, im, filename):
         dir_path = self.__dir_format.format(self.get_label_name())

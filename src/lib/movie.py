@@ -4,7 +4,6 @@ import os
 from tqdm import tqdm
 
 from . import fs
-from .stopwatch import StopWatch
 from .image import Image
 
 
@@ -31,28 +30,25 @@ class Movie:
         if height == 1080 and width == 1920:
             return rgb[780:850, 230:450]
         if height == 720 and width == 1280:
-            return rgb[0:0, 0:0]
+            return rgb[520:560, 150:250]
         return None
 
     def capture(self):
-        StopWatch.start("capture")
         cap = cv2.VideoCapture(self.src_movie_path)
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         print("PATH: ", self.src_movie_path)
         print("FRAME_COUNT: ", frame_count)
         print("FPS: ", fps)
-        StopWatch.end("capture")
 
-        start_pos = 0  # fps:  fps * (60 * 20) .. 20分
-
+        start_pos = 0
         pbar = tqdm(range(start_pos, frame_count, int(fps / fps)))
         for frame_idx in pbar:
             if frame_idx % self.skip != 0:
                 continue
+
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
-            current_pos = str(int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
-            ret, frame = cap.read()
+            _, frame = cap.read()
             if frame is None:
                 continue
 
@@ -60,13 +56,9 @@ class Movie:
             if crop is None:
                 break
 
-            image = Image()
-            image.set_image(crop)
-            """
-            for record in self.records:
-                record.compare(frame_idx, image)
-            """
             try:
+                image = Image()
+                image.set_image(crop)
                 head = self.records[0]
                 pred_class, pred_proba = head.get_predict(image)
                 for record in self.records:

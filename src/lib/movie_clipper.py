@@ -48,17 +48,16 @@ class MovieClipper:
         if height == 1080 and width == 1920:
             return rgb[780:850, 230:450]
         if height == 720 and width == 1280:
-            return rgb[0:0, 0:0]
+            return rgb[520:560, 150:250]
         return None
 
-    def clip_frame(self, frame_idx, crop):
+    def clip_frame(self, crop):
         crop_image_path = os.path.join(self.__output_dir, fs.add_prefix_to('{}.png'.format(self.pid)))
         os.makedirs(os.path.dirname(crop_image_path), exist_ok=True)
         try:
             cv2.imwrite(crop_image_path, crop)
         except Exception as e:
-            print("imwrite ERROR: ", pid, crop_image_path)
-            print(traceback.format_exc())
+            print("imwrite ERROR: ", crop_image_path)
             return False
 
     def capture(self, pid):
@@ -69,16 +68,14 @@ class MovieClipper:
         print("FRAME_COUNT: ", frame_count)
         print("FPS: ", fps)
 
-        start_pos = 0  # fps:  fps * (60 * 20) .. 20分
-
+        start_pos = 0
         pbar = tqdm(range(start_pos, frame_count, int(fps / fps)))
         for frame_idx in pbar:
             if frame_idx % self.skip != 0:
                 continue
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
-            current_pos = str(int(cap.get(cv2.CAP_PROP_POS_FRAMES)))
-            ret, frame = cap.read()
+            _, frame = cap.read()
             if frame is None:
                 continue
 
@@ -86,5 +83,5 @@ class MovieClipper:
             if crop is None:
                 break
 
-            self.clip_frame(frame_idx, crop)
+            self.clip_frame(crop)
         cap.release()

@@ -16,7 +16,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
-JOB_NUM = 6
+JOB_NUM = 4
 THRESHOLD = 95.0
 IMAGE_SIZE_PX = 112
 SKIP_FRAME_INTEVAL = 3
@@ -47,7 +47,6 @@ def process(src_movie_path, record_dir_format, class_mapping):
         movie = Movie(src_movie_path, SKIP_FRAME_INTEVAL, records)
         if movie.isCompltedClip():
             return
-
         movie.capture()
         movie.write_period_to_file()
     except Exception as e:
