@@ -39,6 +39,7 @@ def process(src_movie_path, record_dir_format, class_mapping):
             record.dir_format = record_dir_format
             record.label = label
             record.threshold = THRESHOLD
+            record.skip_frame_interval = SKIP_FRAME_INTEVAL
             record.model = model
             record.px = IMAGE_SIZE_PX
             record.prepare()
