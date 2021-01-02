@@ -16,7 +16,8 @@ from lib.image import Image
 
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
-JOB_NUM = 3
+REJECTED_CHARACTER_NAMES = ["background", "moyo", "logo"]
+JOB_NUM = 6
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.movie")
@@ -79,6 +80,8 @@ def main():
     for series_name in CLIP_TARGET_FOLDER_NAMES:
         charactor_dirs = fs.list_dirs(record_dir)
         for charactor_name in tqdm(charactor_dirs):
+            if charactor_name in REJECTED_CHARACTER_NAMES:
+                continue
             chara_crop_dir, chara_tmp_dir = prepare(charactor_name, series_name)
             chara_record_dir = os.path.join(record_dir, charactor_name, series_name)
             record_pathes = fs.list_entries(chara_record_dir)
