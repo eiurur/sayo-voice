@@ -22,7 +22,6 @@ cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.movie")
 crop_dir = os.path.join(resource_dir, "crop_movies")
 tmp_dir = os.path.join(resource_dir, "crop_tmp")
-movie_dir = os.path.join(cwd.parent, 'movies')
 record_dir = os.path.join(cwd, "02.record", "records")
 
 
@@ -82,7 +81,7 @@ def main():
         for charactor_name in tqdm(charactor_dirs):
             chara_crop_dir, chara_tmp_dir = prepare(charactor_name, series_name)
             chara_record_dir = os.path.join(record_dir, charactor_name, series_name)
-            record_pathes = fs.list_files(chara_record_dir)
+            record_pathes = fs.list_entries(chara_record_dir)
             joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
                 src_record_path=record_path,
                 chara_crop_dir=chara_crop_dir,

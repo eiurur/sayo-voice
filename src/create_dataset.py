@@ -16,17 +16,18 @@ from lib.image import Image
 from lib.movie_clipper import MovieClipper
 
 
+# $CLIP_TARGET_FOLDER_NAMES = ["s2"]
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 OUTPUT_FOLDER_NAME = "inbox"
 CACHE_FILE_NAME = "cache.txt"
-JOB_NUM = 2
+JOB_NUM = 3
 SKIP_FRAME_INTEVAL = 180
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "00.dataset")
 cache_filepath = os.path.join(resource_dir, CACHE_FILE_NAME)
 clip_output_dir = os.path.join(resource_dir, OUTPUT_FOLDER_NAME)
-movie_dir = os.path.join(cwd.parent, 'movies')
+movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 
 
 def process(src_movie_path):
@@ -48,7 +49,7 @@ def process(src_movie_path):
 
 def main():
     for series_name in tqdm(CLIP_TARGET_FOLDER_NAMES):
-        movie_pathes = fs.list_files(os.path.join(movie_dir, series_name))
+        movie_pathes = fs.list_entries(os.path.join(movie_dir, series_name))
         joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
             src_movie_path=movie_path
         ) for movie_path in movie_pathes])
