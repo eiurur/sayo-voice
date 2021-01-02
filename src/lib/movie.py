@@ -4,6 +4,7 @@ import os
 from tqdm import tqdm
 
 from . import fs
+from .stopwatch import StopWatch
 from .image import Image
 
 
@@ -34,12 +35,14 @@ class Movie:
         return None
 
     def capture(self):
+        StopWatch.start("capture")
         cap = cv2.VideoCapture(self.src_movie_path)
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         print("PATH: ", self.src_movie_path)
         print("FRAME_COUNT: ", frame_count)
         print("FPS: ", fps)
+        StopWatch.end("capture")
 
         start_pos = 0  # fps:  fps * (60 * 20) .. 20分
 
@@ -59,8 +62,17 @@ class Movie:
 
             image = Image()
             image.set_image(crop)
+            """
             for record in self.records:
                 record.compare(frame_idx, image)
+            """
+            try:
+                head = self.records[0]
+                pred_class, pred_proba = head.get_predict(image)
+                for record in self.records:
+                    record.record(frame_idx, image, pred_class, pred_proba)
+            except Exception as e:
+                continue
         cap.release()
 
     def write_period_to_file(self):
@@ -70,4 +82,4 @@ class Movie:
             ascii_filename = "{}{}".format(hs, ext)
             prefix_data = [self.src_movie_path, ascii_filename]
             movie_file_name_without_ext = fs.get_filename_without_ext(self.src_movie_path)
-            record.write(prefix_data, movie_file_name_without_ext)
+            record.write_to_file(prefix_data, movie_file_name_without_ext)
