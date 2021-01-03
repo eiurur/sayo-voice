@@ -1,13 +1,10 @@
-from __future__ import print_function
-import sys
-import cv2
 import os
 import shutil
 import traceback
 import joblib
+import math
 from tqdm import tqdm
 from datetime import datetime
-from multiprocessing import current_process, Pool, Process
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from pathlib import Path
 
@@ -17,7 +14,7 @@ from lib.image import Image
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 REJECTED_CHARACTER_NAMES = ["background", "moyo", "logo"]
-JOB_NUM = 6
+JOB_NUM = 3
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.movie")
@@ -26,14 +23,32 @@ tmp_dir = os.path.join(resource_dir, "crop_tmp")
 record_dir = os.path.join(cwd, "02.record", "records")
 
 
+def calc_elapsed_time(frame, fps):
+    seconds = frame / fps
+    hf, hi = math.modf(seconds / (60 * 60))
+    h = math.floor(hi)
+    mf, mi = math.modf(hf * 60)
+    m = math.floor(mi)
+    sf, si = math.modf(mf * 60)
+    s = math.floor(si)
+    ff, fi = math.modf(sf * 100)
+    f = math.floor(fi)
+    format = '{:0>2}:{:0>2}:{:0>2}.{:0>2}'.format(h, m, s, f)
+    return format
+
+
 def clip_movie(movie_file_path, clips, dst):
     print(movie_file_path, clips, dst)
     video = VideoFileClip(movie_file_path)
     clipsArray = []
     for clip in clips:
-        [startTime, endTime] = list(map(int, clip.split('-')))
-        print(startTime, endTime)
-        clip = video.subclip(startTime / video.fps, endTime / video.fps)
+        [start_frame, end_frame] = list(map(int, clip.split('-')))
+        start_time = calc_elapsed_time(start_frame, video.fps)
+        end_time = calc_elapsed_time(end_frame, video.fps)
+        print(start_frame, video.fps, start_time)
+        print(end_frame, video.fps, end_time)
+        clip = video.subclip(start_time, end_time)
+        # clip = video.subclip(start_frame / video.fps, end_frame / video.fps)
         clipsArray.append(clip)
     final = concatenate_videoclips(clipsArray)
     final.write_videofile(dst, fps=video.fps, codec='libx264', audio_codec="aac")
@@ -80,16 +95,21 @@ def main():
     for series_name in CLIP_TARGET_FOLDER_NAMES:
         charactor_dirs = fs.list_dirs(record_dir)
         for charactor_name in tqdm(charactor_dirs):
-            if charactor_name in REJECTED_CHARACTER_NAMES:
-                continue
-            chara_crop_dir, chara_tmp_dir = prepare(charactor_name, series_name)
-            chara_record_dir = os.path.join(record_dir, charactor_name, series_name)
-            record_pathes = fs.list_entries(chara_record_dir)
-            joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
-                src_record_path=record_path,
-                chara_crop_dir=chara_crop_dir,
-                chara_tmp_dir=chara_tmp_dir
-            ) for record_path in record_pathes])
+            try:
+                if charactor_name in REJECTED_CHARACTER_NAMES:
+                    continue
+                chara_crop_dir, chara_tmp_dir = prepare(charactor_name, series_name)
+                chara_record_dir = os.path.join(record_dir, charactor_name, series_name)
+                record_pathes = fs.list_entries(chara_record_dir)
+                joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
+                    src_record_path=record_path,
+                    chara_crop_dir=chara_crop_dir,
+                    chara_tmp_dir=chara_tmp_dir
+                ) for record_path in record_pathes])
+            except Exception as e:
+                print("main ERROR: ")
+                print(e)
+                print(traceback.format_exc())
 
 
 if __name__ == "__main__":
