@@ -1,6 +1,6 @@
+import os
 import cv2
 import hashlib
-import os
 from tqdm import tqdm
 
 from . import fs
@@ -60,10 +60,11 @@ class Movie:
                 image = Image()
                 image.set_image(crop)
                 head = self.records[0]
-                pred_class, pred_proba = head.get_predict(image)
+                pred_class, pred_proba = head.predict(image)
                 for record in self.records:
                     record.record(frame_idx, image, pred_class, pred_proba)
             except Exception as e:
+                print(e)
                 continue
         cap.release()
 
