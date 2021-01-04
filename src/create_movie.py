@@ -3,6 +3,7 @@ import shutil
 import traceback
 import joblib
 import math
+import pprint
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -12,9 +13,12 @@ from lib import fs
 from lib.image import Image
 
 
-CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
+CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
 REJECTED_CHARACTER_NAMES = ["background", "moyo", "logo"]
-JOB_NUM = 3
+JOB_NUM = 1
+# VIDEO_CODEC = "libx264"  # CPU
+VIDEO_CODEC = "h264_nvenc"  # GPU
+AUDIO_CODEC = "aac"
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.movie")
@@ -37,21 +41,32 @@ def calc_elapsed_time(frame, fps):
     return format
 
 
-def clip_movie(movie_file_path, clips, dst):
-    print(movie_file_path, clips, dst)
+def clip_movie(movie_file_path, clips, dst, src_record_path):
     video = VideoFileClip(movie_file_path)
+    times = []
     clipsArray = []
     for clip in clips:
         [start_frame, end_frame] = list(map(int, clip.split('-')))
         start_time = calc_elapsed_time(start_frame, video.fps)
         end_time = calc_elapsed_time(end_frame, video.fps)
-        print(start_frame, video.fps, start_time)
-        print(end_frame, video.fps, end_time)
         clip = video.subclip(start_time, end_time)
-        # clip = video.subclip(start_frame / video.fps, end_frame / video.fps)
         clipsArray.append(clip)
+        times.append([start_time, end_time])
+    print("-----------------")
+    print(src_record_path, dst)
+    pprint.pprint(video.fps)
+    pprint.pprint(clips)
+    pprint.pprint(times)
+    print("-- concatenate_videoclips")
     final = concatenate_videoclips(clipsArray)
-    final.write_videofile(dst, fps=video.fps, codec='libx264', audio_codec="aac")
+    print("-- write_videofile")
+    final.write_videofile(
+        dst,
+        fps=video.fps,
+        codec=VIDEO_CODEC,
+        audio_codec=AUDIO_CODEC,
+        # ffmpeg_params=['-hwaccel', 'cuvid']
+    )
     video.close()
 
 
@@ -70,9 +85,10 @@ def process(src_record_path, chara_crop_dir, chara_tmp_dir):
             if os.path.exists(dst):
                 return
 
-            tmp_file_path = os.path.join(chara_tmp_dir, movie_encoded_file_name)
-            shutil.copy2(movie_raw_file_path, tmp_file_path)
-            clip_movie(tmp_file_path, clips, dst)
+            # tmp_file_path = os.path.join(chara_tmp_dir, movie_encoded_file_name)
+            # shutil.copy2(movie_raw_file_path, tmp_file_path)
+            # clip_movie(tmp_file_path, clips, dst, src_record_path)
+            clip_movie(movie_raw_file_path, clips, dst, src_record_path)
     except Exception as e:
         print("process ERROR: ", src_record_path)
         print(e)
@@ -95,6 +111,7 @@ def main():
     for series_name in CLIP_TARGET_FOLDER_NAMES:
         charactor_dirs = fs.list_dirs(record_dir)
         for charactor_name in tqdm(charactor_dirs):
+            print("CHARACTOR -> ", charactor_name)
             try:
                 if charactor_name in REJECTED_CHARACTER_NAMES:
                     continue
