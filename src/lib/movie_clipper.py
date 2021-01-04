@@ -46,9 +46,10 @@ class MovieClipper:
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         (height, width) = rgb.shape[:2]
         if height == 1080 and width == 1920:
-            return rgb[780:850, 230:450]
+            return rgb[775:850, 220:615]
         if height == 720 and width == 1280:
-            return rgb[520:560, 150:250]
+            resized = cv2.resize(rgb, (1920, 1080))
+            return resized[775:850, 220:615]
         return None
 
     def clip_frame(self, crop):
