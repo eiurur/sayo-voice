@@ -25,7 +25,7 @@ from lib.image import Image
 
 IMAGE_SIZE_PX = 112
 BATCH_SIZE = 12
-EPOCHS = 50
+EPOCHS = 30
 LEARNING_RATE = 0.0001
 TRAIN_DATA_SIZE_RATIO = 0.7
 VALID_DATA_SIZE_RATIO = 0.3
@@ -36,8 +36,8 @@ resource_dir = os.path.join(cwd, "01.model")
 input_data_dir_path = os.path.join(resource_dir, "input")
 train_data_dir_path = os.path.join(resource_dir, "train")
 class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json")
-model_file_path = os.path.join(cwd.parent, "model", "dnn_model.h5")
-checkpoint_file_path = os.path.join(cwd.parent, "model", "dnn_checkpoint.h5")
+model_file_path = os.path.join(cwd.parent, "model", "model.h5")
+checkpoint_file_path = os.path.join(cwd.parent, "model", "checkpoint.h5")
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
@@ -65,13 +65,17 @@ def make_train_data(classes):
         class_dir_path = os.path.join(train_data_dir_path, c["name"])
         os.makedirs(class_dir_path, exist_ok=True)
         for filepath in img_file_pathes:
-            image = Image()
-            image.load_image_from_filepath(filepath)
-            image.transform_image_for_predict_with(IMAGE_SIZE_PX)
-            dst_filepath = os.path.join(class_dir_path, fs.get_filename(filepath))
-            image.write_to(dst_filepath)
-            print(dst_filepath)
-            ret[c["name"]].append(dst_filepath)
+            try:
+                image = Image()
+                image.load_image_from_filepath(filepath)
+                image.transform_image_for_predict_with(IMAGE_SIZE_PX)
+                dst_filepath = os.path.join(class_dir_path, fs.get_filename(filepath))
+                image.write_to(dst_filepath)
+                print(dst_filepath)
+                ret[c["name"]].append(dst_filepath)
+            except Exception as e:
+                print(e)
+
     return ret
 
 
@@ -150,7 +154,9 @@ def setup(class_num, ml_data, ml_label):
     na_label_test = np.array(label_test)
 
     print(na_data_train.shape, na_data_train[0].shape)
-    na_data_train = na_data_train.reshape(na_data_train.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)  # 2次元配列を1次元に変換
+
+    # 2次元配列を1次元に変換
+    na_data_train = na_data_train.reshape(na_data_train.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
     na_data_valid = na_data_valid.reshape(na_data_valid.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
     na_data_test = na_data_test.reshape(na_data_test.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
 
@@ -188,7 +194,7 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
     early_stopping = EarlyStopping(
         monitor='val_loss',
         min_delta=0.0,
-        patience=2
+        patience=3
     )
 
     modelCheckpoint = ModelCheckpoint(filepath=checkpoint_file_path,

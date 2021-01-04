@@ -7,7 +7,6 @@ import traceback
 import joblib
 from tqdm import tqdm
 from datetime import datetime
-from time import sleep
 from multiprocessing import current_process, Pool, Process
 from pathlib import Path
 
@@ -20,7 +19,7 @@ from lib.movie_clipper import MovieClipper
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 OUTPUT_FOLDER_NAME = "inbox"
 CACHE_FILE_NAME = "cache.txt"
-JOB_NUM = 3
+JOB_NUM = 2
 SKIP_FRAME_INTEVAL = 180
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +31,6 @@ movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 
 def process(src_movie_path):
     try:
-        sleep(0.01)
         cp = current_process()
         pid = cp._identity[0]
         movie_clipper = MovieClipper(src_movie_path, SKIP_FRAME_INTEVAL, pid)

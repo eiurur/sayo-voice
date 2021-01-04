@@ -1,7 +1,8 @@
+import copy
+import math
 import os
 import traceback
 import numpy as np
-import copy
 
 from . import fs
 from .stopwatch import StopWatch
@@ -97,13 +98,17 @@ class Record:
     def record(self, frame_idx, im, pred_class, pred_proba):
         if self.start_frame == -1 and (pred_proba >= self.__threshold and str(self.get_label_index()) == str(pred_class)):
             self.start_frame = frame_idx
-            print(self.get_label_name(), pred_class, pred_proba)
+            print("\n")
+            print("record:start ", self.get_label_name(), pred_class, pred_proba)
+            # self.debug_image(im, f"start_{frame_idx}_{pred_class}_{pred_proba}.jpg")
         elif self.start_frame != -1 and (pred_proba < self.__threshold or str(self.get_label_index()) != str(pred_class)):
-            end_frame = frame_idx - self.__skip_frame_interval
+            end_frame = frame_idx - math.ceil(self.__skip_frame_interval / 2)
             self.periods.append("{}-{}".format(self.start_frame, end_frame))
             self.start_frame = -1
-            print(self.get_label_name(), pred_class, pred_proba)
+            print("\n")
+            print("record:end   ", self.get_label_name(), pred_class, pred_proba)
             print(self.periods)
+            # self.debug_image(im, f"end_{frame_idx}_{pred_class}_{pred_proba}.jpg")
 
     def debug_image(self, im, filename):
         dir_path = self.__dir_format.format(self.get_label_name())

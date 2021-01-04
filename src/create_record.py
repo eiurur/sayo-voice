@@ -15,9 +15,9 @@ from lib.movie import Movie
 import tensorflow as tf
 from tensorflow import keras
 
-CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
-JOB_NUM = 4
-THRESHOLD = 95.0
+CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
+JOB_NUM = 3
+THRESHOLD = 97.0
 IMAGE_SIZE_PX = 112
 SKIP_FRAME_INTEVAL = 3
 
@@ -25,7 +25,7 @@ cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "02.record")
 movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json")
-model_file_path = os.path.join(cwd.parent, "model", "dnn_model.h5")
+model_file_path = os.path.join(cwd.parent, "model", "model.h5")
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
