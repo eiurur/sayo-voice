@@ -1,5 +1,4 @@
 import os
-import shutil
 import traceback
 import joblib
 import math
@@ -10,7 +9,6 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 from pathlib import Path
 
 from lib import fs
-from lib.image import Image
 
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
@@ -42,7 +40,7 @@ def calc_elapsed_time(frame, fps):
 
 
 def clip_movie(movie_file_path, clips, dst, src_record_path):
-    video = VideoFileClip(movie_file_path)
+    video = VideoFileClip(movie_file_path, fps_source="fps")
     times = []
     clipsArray = []
     for clip in clips:
@@ -65,12 +63,11 @@ def clip_movie(movie_file_path, clips, dst, src_record_path):
         fps=video.fps,
         codec=VIDEO_CODEC,
         audio_codec=AUDIO_CODEC,
-        # ffmpeg_params=['-hwaccel', 'cuvid']
     )
     video.close()
 
 
-def process(src_record_path, chara_crop_dir, chara_tmp_dir):
+def process(src_record_path, chara_crop_dir):
     try:
         with open(src_record_path, encoding='UTF-8') as f:
             lines = f.readlines()
@@ -85,9 +82,6 @@ def process(src_record_path, chara_crop_dir, chara_tmp_dir):
             if os.path.exists(dst):
                 return
 
-            # tmp_file_path = os.path.join(chara_tmp_dir, movie_encoded_file_name)
-            # shutil.copy2(movie_raw_file_path, tmp_file_path)
-            # clip_movie(tmp_file_path, clips, dst, src_record_path)
             clip_movie(movie_raw_file_path, clips, dst, src_record_path)
     except Exception as e:
         print("process ERROR: ", src_record_path)
@@ -100,11 +94,7 @@ def prepare(charactor_name, series_name):
     if not os.path.exists(chara_crop_dir):
         os.makedirs(chara_crop_dir, exist_ok=True)
 
-    chara_tmp_dir = os.path.join(tmp_dir, charactor_name, series_name)
-    if not os.path.exists(chara_tmp_dir):
-        os.makedirs(chara_tmp_dir, exist_ok=True)
-
-    return chara_crop_dir, chara_tmp_dir
+    return chara_crop_dir
 
 
 def main():
@@ -115,13 +105,12 @@ def main():
             try:
                 if charactor_name in REJECTED_CHARACTER_NAMES:
                     continue
-                chara_crop_dir, chara_tmp_dir = prepare(charactor_name, series_name)
+                chara_crop_dir = prepare(charactor_name, series_name)
                 chara_record_dir = os.path.join(record_dir, charactor_name, series_name)
                 record_pathes = fs.list_entries(chara_record_dir)
                 joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
                     src_record_path=record_path,
                     chara_crop_dir=chara_crop_dir,
-                    chara_tmp_dir=chara_tmp_dir
                 ) for record_path in record_pathes])
             except Exception as e:
                 print("main ERROR: ")
