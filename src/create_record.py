@@ -17,7 +17,7 @@ from tensorflow import keras
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
 JOB_NUM = 3
-THRESHOLD = 97.0
+THRESHOLD = 99.0
 IMAGE_SIZE_PX = 112
 SKIP_FRAME_INTEVAL = 3
 

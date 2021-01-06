@@ -15,7 +15,6 @@ from lib.image import Image
 from lib.movie_clipper import MovieClipper
 
 
-# $CLIP_TARGET_FOLDER_NAMES = ["s2"]
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
 OUTPUT_FOLDER_NAME = "inbox"
 CACHE_FILE_NAME = "cache.txt"

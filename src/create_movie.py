@@ -2,7 +2,6 @@ import os
 import traceback
 import joblib
 import math
-import pprint
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -50,14 +49,7 @@ def clip_movie(movie_file_path, clips, dst, src_record_path):
         clip = video.subclip(start_time, end_time)
         clipsArray.append(clip)
         times.append([start_time, end_time])
-    print("-----------------")
-    print(src_record_path, dst)
-    pprint.pprint(video.fps)
-    pprint.pprint(clips)
-    pprint.pprint(times)
-    print("-- concatenate_videoclips")
     final = concatenate_videoclips(clipsArray)
-    print("-- write_videofile")
     final.write_videofile(
         dst,
         fps=video.fps,
