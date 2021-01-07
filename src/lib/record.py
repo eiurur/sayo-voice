@@ -110,11 +110,12 @@ class Record:
         dir_path = self.__dir_format.format(self.get_label_name())
         c_dir = os.path.join(dir_path, "crop")
         os.makedirs(c_dir, exist_ok=True)
-        im.write_to(os.path.join(c_dir, filename))  # DEBUG
+        im.write_to(os.path.join(c_dir, filename))
 
     def write_to_file(self, prefix_data, movie_file_name_without_ext):
         if prefix_data is None:
             prefix_data = []
+
         dir_path = self.__dir_format.format(self.get_label_name())
         record_file = os.path.join(dir_path, "{}.txt".format(movie_file_name_without_ext))
         if os.path.exists(record_file):

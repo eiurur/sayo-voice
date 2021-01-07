@@ -15,7 +15,6 @@ JOB_NUM = 1
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.movie")
 crop_dir = os.path.join(resource_dir, "crop_movies")
-tmp_dir = os.path.join(resource_dir, "crop_tmp")
 record_dir = os.path.join(cwd, "02.record", "records")
 config_file_path = os.path.join(cwd.parent, "config.json")
 

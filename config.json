@@ -1,7 +1,7 @@
 {
     "folders": ["s1", "s2", "band"],
     "rejected_charactors": ["background", "moyo", "logo", "name"],
-    "available_charactors": ["sayo", "hina", "tsugumi", "kokoro"],
+    "available_charactors": ["kokoro", "hina", "sayo", "tsugumi"],
     "threshold": 99.0,
     "image_size_px": 112,
     "frame_width": 1920,

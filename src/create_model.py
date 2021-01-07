@@ -200,7 +200,6 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                                       mode='min',
                                       period=1)
 
-    # adam = Adam(lr=0.0001)
     sdg = SGD(lr=config["learning_rate"], momentum=0.9, decay=1e-4, nesterov=False)
     model.compile(loss='categorical_crossentropy',
                   optimizer=sdg,
