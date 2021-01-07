@@ -1,6 +1,7 @@
 import os
 import traceback
 import joblib
+import json
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -9,20 +10,16 @@ from pathlib import Path
 
 from lib import fs
 
-
-CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
-REJECTED_CHARACTOR_NAMES = ["background", "moyo", "logo"]
-AVAILABLE_CHARACTOR_NAMES = ["sayo", "hina", "tsugumi", "kokoro"]
-JOB_NUM = len(CLIP_TARGET_FOLDER_NAMES)
-FRAME_WIDTH = 1920
-FRAME_HEIGHT = 1080
-VIDEO_CODEC = "h264_nvenc"  # GPU
-AUDIO_CODEC = "aac"
+JOB_NUM = 3
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "04.product")
 output_dir = os.path.join(resource_dir, "movies")
 input_dir = os.path.join(cwd, "03.movie", "crop_movies")
+config_file_path = os.path.join(cwd.parent, "config.json")
+
+config_file = open(config_file_path, 'r')
+config = json.load(config_file)
 
 
 def concat_movies(movie_file_pathes, dst):
@@ -30,8 +27,8 @@ def concat_movies(movie_file_pathes, dst):
     clips = []
     for path in movie_file_pathes:
         clip = VideoFileClip(path)
-        if clip.w != FRAME_WIDTH or clip.h != FRAME_HEIGHT:
-            clip = resize(clip, (FRAME_WIDTH, FRAME_HEIGHT))
+        if clip.w != config["frame_width"] or clip.h != config["frame_height"]:
+            clip = resize(clip, (config["frame_width"], config["frame_height"]))
         clips.append(clip)
     final_clip = concatenate_videoclips(clips)
     return final_clip
@@ -40,8 +37,8 @@ def concat_movies(movie_file_pathes, dst):
 def export_video(clip, dst):
     clip.write_videofile(
         dst,
-        codec=VIDEO_CODEC,
-        audio_codec=AUDIO_CODEC,
+        codec=config["video_codec"],
+        audio_codec=config["audio_codec"],
     )
 
 
@@ -81,10 +78,10 @@ def main():
     pbar = tqdm(charactor_dirs)
     for charactor_name in pbar:
         print("CHARACTOR -> ", charactor_name)
-        if len(REJECTED_CHARACTOR_NAMES) > 0 and charactor_name in REJECTED_CHARACTOR_NAMES:
+        if len(config["rejected_charactors"]) > 0 and charactor_name in config["rejected_charactors"]:
             pbar.update(1)
             continue
-        if len(AVAILABLE_CHARACTOR_NAMES) > 0 and charactor_name not in AVAILABLE_CHARACTOR_NAMES:
+        if len(config["availbable_charactors"]) > 0 and charactor_name not in config["availbable_charactors"]:
             pbar.update(1)
             continue
         chara_dir = prepare(charactor_name)
@@ -92,7 +89,7 @@ def main():
             movie_file_pathes=fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),
             chara_dir=chara_dir,
             series_name=series_name
-        ) for series_name in CLIP_TARGET_FOLDER_NAMES])
+        ) for series_name in config["folders"]])
         # for series_name in CLIP_TARGET_FOLDER_NAMES:
         #     process(
         #         fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),

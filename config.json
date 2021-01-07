@@ -4,6 +4,8 @@
     "available_charactors": ["sayo", "hina", "tsugumi", "kokoro"],
     "threshold": 99.0,
     "image_size_px": 112,
+    "frame_width": 1920,
+    "frame_height": 1080,
     "skip_frame_interval": 3,
     "video_codec": "h264_nvenc",
     "audio_codec": "aac",
