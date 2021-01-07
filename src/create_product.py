@@ -30,28 +30,41 @@ def concat_movies(movie_file_pathes, dst):
     clips = []
     for path in movie_file_pathes:
         clip = VideoFileClip(path)
-        print(clip.w, clip.h, clip.w != FRAME_WIDTH)
         if clip.w != FRAME_WIDTH or clip.h != FRAME_HEIGHT:
             clip = resize(clip, (FRAME_WIDTH, FRAME_HEIGHT))
         clips.append(clip)
     final_clip = concatenate_videoclips(clips)
-    final_clip.write_videofile(
+    return final_clip
+
+
+def export_video(clip, dst):
+    clip.write_videofile(
         dst,
         codec=VIDEO_CODEC,
         audio_codec=AUDIO_CODEC,
     )
 
 
+def export_audio(clip, dst):
+    clip.audio.write_audiofile(dst)
+
+
 def process(movie_file_pathes, chara_dir, series_name):
     try:
         if len(movie_file_pathes) == 0:
             return
-        dst = os.path.join(chara_dir, f"{series_name}.mp4")
-        if os.path.exists(dst):
-            return
-        concat_movies(movie_file_pathes, dst)
+        dst_video = os.path.join(chara_dir, f"{series_name}.mp4")
+        dst_audio = os.path.join(chara_dir, f"{series_name}.mp3")
+        if os.path.exists(dst_video):
+            clip = VideoFileClip(dst_video)
+        else:
+            clip = concat_movies(movie_file_pathes)
+        if not os.path.exists(dst_video):
+            export_video(clip, dst_video)
+        if not os.path.exists(dst_audio):
+            export_audio(clip, dst_audio)
     except Exception as e:
-        print("process ERROR: ", dst)
+        print("process ERROR: ", dst_video)
         print(e)
         print(traceback.format_exc())
 
