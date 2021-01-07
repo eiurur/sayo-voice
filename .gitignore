@@ -3,8 +3,6 @@
 **/*.png
 temp*.png
 records/**
-model/**/*.h5
-model/**/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
