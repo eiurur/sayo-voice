@@ -65,6 +65,9 @@ class Record:
         index, name = self.__label
         return name
 
+    def get_config_data(self):
+        return [self.__threshold, self.__skip_frame_interval, self.__px]
+
     def __predict(self, im):
         img_predict = [im]
         data_predict = np.asarray(img_predict)

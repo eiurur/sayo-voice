@@ -46,15 +46,18 @@ class Movie:
         pbar = tqdm(range(start_pos, frame_count, int(fps / fps)))
         for frame_idx in pbar:
             if frame_idx % self.skip != 0:
+                pbar.update(1)
                 continue
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             _, frame = cap.read()
             if frame is None:
+                pbar.update(1)
                 continue
 
             crop = self.crop_name_area(frame)
             if crop is None:
+                pbar.update(1)
                 break
 
             try:
@@ -66,6 +69,7 @@ class Movie:
                     record.record(frame_idx, image, pred_class, pred_proba)
             except Exception as e:
                 print(e)
+                pbar.update(1)
                 continue
         cap.release()
 
@@ -74,6 +78,7 @@ class Movie:
             [filename, ext] = fs.get_filename_and_ext(self.src_movie_path)
             hs = hashlib.md5(filename.encode()).hexdigest()
             ascii_filename = "{}{}".format(hs, ext)
-            prefix_data = [self.src_movie_path, ascii_filename]
+            config_data = record.get_config_data()
+            prefix_data = [self.src_movie_path, ascii_filename] + config_data
             movie_file_name_without_ext = fs.get_filename_without_ext(self.src_movie_path)
             record.write_to_file(prefix_data, movie_file_name_without_ext)

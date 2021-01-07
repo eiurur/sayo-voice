@@ -1,0 +1,16 @@
+{
+    "folders": ["s1", "s2", "band"],
+    "rejected_charactors": ["background", "moyo", "logo", "name"],
+    "available_charactors": ["sayo", "hina", "tsugumi", "kokoro"],
+    "threshold": 99.0,
+    "image_size_px": 112,
+    "skip_frame_interval": 3,
+    "video_codec": "h264_nvenc",
+    "audio_codec": "aac",
+    "batch_size": 12,
+    "epochs": 30,
+    "learning_rate": 0.0001,
+    "train_data_size_ratio": 0.7,
+    "valid_data_size_ratio": 0.3,
+    "test_data_size_ratio": 0.3
+}

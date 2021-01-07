@@ -1,30 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import sys
 import os
 import traceback
 import joblib
 from tqdm import tqdm
 from datetime import datetime
-from multiprocessing import current_process, Pool, Process
+from multiprocessing import current_process
 from pathlib import Path
 
 from lib import fs
-from lib.image import Image
 from lib.movie_clipper import MovieClipper
 
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2"]
-OUTPUT_FOLDER_NAME = "inbox"
-CACHE_FILE_NAME = "cache.txt"
 JOB_NUM = 2
 SKIP_FRAME_INTEVAL = 180
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "00.dataset")
-cache_filepath = os.path.join(resource_dir, CACHE_FILE_NAME)
-clip_output_dir = os.path.join(resource_dir, OUTPUT_FOLDER_NAME)
+cache_filepath = os.path.join(resource_dir, "cache.txt")
+clip_output_dir = os.path.join(resource_dir, "inbox")
 movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 
 

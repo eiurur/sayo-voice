@@ -73,15 +73,18 @@ class MovieClipper:
         pbar = tqdm(range(start_pos, frame_count, int(fps / fps)))
         for frame_idx in pbar:
             if frame_idx % self.skip != 0:
+                pbar.update(1)
                 continue
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             _, frame = cap.read()
             if frame is None:
+                pbar.update(1)
                 continue
 
             crop = self.crop_name_area(frame)
             if crop is None:
+                pbar.update(1)
                 break
 
             self.clip_frame(crop)

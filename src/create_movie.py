@@ -2,6 +2,7 @@ import os
 import traceback
 import joblib
 import math
+import json
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -9,19 +10,17 @@ from pathlib import Path
 
 from lib import fs
 
-
-CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
-REJECTED_CHARACTER_NAMES = ["background", "moyo", "logo"]
 JOB_NUM = 1
-# VIDEO_CODEC = "libx264"  # CPU
-VIDEO_CODEC = "h264_nvenc"  # GPU
-AUDIO_CODEC = "aac"
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.movie")
 crop_dir = os.path.join(resource_dir, "crop_movies")
 tmp_dir = os.path.join(resource_dir, "crop_tmp")
 record_dir = os.path.join(cwd, "02.record", "records")
+config_file_path = os.path.join(cwd.parent, "config.json")
+
+config_file = open(config_file_path, 'r')
+config = json.load(config_file)
 
 
 def calc_elapsed_time(frame, fps):
@@ -53,8 +52,8 @@ def clip_movie(movie_file_path, clips, dst, src_record_path):
     final.write_videofile(
         dst,
         fps=video.fps,
-        codec=VIDEO_CODEC,
-        audio_codec=AUDIO_CODEC,
+        codec=config["video_codec"],
+        audio_codec=config["audio_codec"],
     )
     video.close()
 
@@ -90,12 +89,17 @@ def prepare(charactor_name, series_name):
 
 
 def main():
-    for series_name in CLIP_TARGET_FOLDER_NAMES:
+    for series_name in config["folders"]:
         charactor_dirs = fs.list_dirs(record_dir)
-        for charactor_name in tqdm(charactor_dirs):
+        pbar = tqdm(charactor_dirs)
+        for charactor_name in pbar:
             print("CHARACTOR -> ", charactor_name)
             try:
-                if charactor_name in REJECTED_CHARACTER_NAMES:
+                if len(config["rejected_charactors"]) > 0 and charactor_name in config["rejected_charactors"]:
+                    pbar.update(1)
+                    continue
+                if len(config["available_charactors"]) > 0 and charactor_name not in config["available_charactors"]:
+                    pbar.update(1)
                     continue
                 chara_crop_dir = prepare(charactor_name, series_name)
                 chara_record_dir = os.path.join(record_dir, charactor_name, series_name)

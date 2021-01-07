@@ -5,12 +5,12 @@
 import cv2
 import os
 import math
+import json
 import numpy as np
 from datetime import datetime
 from sklearn.model_selection import train_test_split
 from pathlib import Path
 
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Activation, BatchNormalization, Dense, Dropout, Flatten
@@ -23,14 +23,6 @@ from lib import fs
 from lib.image import Image
 
 
-IMAGE_SIZE_PX = 112
-BATCH_SIZE = 12
-EPOCHS = 30
-LEARNING_RATE = 0.0001
-TRAIN_DATA_SIZE_RATIO = 0.7
-VALID_DATA_SIZE_RATIO = 0.3
-TEST_DATA_SIZE_RATIO = 0.3  # NOTE: 指定の比率でVALID_DATA_SIZE_RATIOを分割する。valid:0.3, test:0.3なら全体の0.09。
-
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "01.model")
 input_data_dir_path = os.path.join(resource_dir, "input")
@@ -38,6 +30,10 @@ train_data_dir_path = os.path.join(resource_dir, "train")
 class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json")
 model_file_path = os.path.join(cwd.parent, "model", "model.h5")
 checkpoint_file_path = os.path.join(cwd.parent, "model", "checkpoint.h5")
+config_file_path = os.path.join(cwd.parent, "config.json")
+
+config_file = open(config_file_path, 'r')
+config = json.load(config_file)
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
@@ -68,7 +64,7 @@ def make_train_data(classes):
             try:
                 image = Image()
                 image.load_image_from_filepath(filepath)
-                image.transform_image_for_predict_with(IMAGE_SIZE_PX)
+                image.transform_image_for_predict_with(config["image_size_px"])
                 dst_filepath = os.path.join(class_dir_path, fs.get_filename(filepath))
                 image.write_to(dst_filepath)
                 print(dst_filepath)
@@ -90,7 +86,6 @@ def preprocess(classes, train_data):
 
     class_mapping = {}
     for label_index, (label, img_file_pathes) in enumerate(train_data.items()):
-        # sample = random.sample(img_file_pathes, ml_data_min_num)
         class_mapping[label_index] = label
         for img_file_path in img_file_pathes:
             img = cv2.imread(img_file_path, cv2.IMREAD_GRAYSCALE)
@@ -105,26 +100,26 @@ def preprocess(classes, train_data):
 def create_model(class_num):
     model = Sequential()
 
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 4), kernel_size=(3, 3), input_shape=(IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)))
+    model.add(Conv2D(math.floor(config["image_size_px"] / 4), kernel_size=(3, 3), input_shape=(config["image_size_px"], config["image_size_px"], 1)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 2), (3, 3)))
+    model.add(Conv2D(math.floor(config["image_size_px"] / 2), (3, 3)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX / 2), (3, 3)))
+    model.add(Conv2D(math.floor(config["image_size_px"] / 2), (3, 3)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(math.floor(IMAGE_SIZE_PX), (3, 3)))
+    model.add(Conv2D(math.floor(config["image_size_px"]), (3, 3)))
     model.add(Activation('relu'))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Flatten())
-    model.add(Dense(math.floor(IMAGE_SIZE_PX / 2), activation='relu'))
+    model.add(Dense(math.floor(config["image_size_px"] / 2), activation='relu'))
     model.add(Dense(class_num, activation='softmax'))
 
     return model
@@ -142,8 +137,8 @@ def step_decay(epoch):
 
 
 def setup(class_num, ml_data, ml_label):
-    data_train, _data_valid, label_train, _label_valid = train_test_split(ml_data, ml_label, test_size=VALID_DATA_SIZE_RATIO, train_size=TRAIN_DATA_SIZE_RATIO)
-    data_valid, data_test, label_valid, label_test = train_test_split(_data_valid, _label_valid, test_size=TEST_DATA_SIZE_RATIO)
+    data_train, _data_valid, label_train, _label_valid = train_test_split(ml_data, ml_label, test_size=config["valid_data_size_ratio"], train_size=config["train_data_size_ratio"])
+    data_valid, data_test, label_valid, label_test = train_test_split(_data_valid, _label_valid, test_size=config["test_data_size_ratio"])
 
     na_data_train = np.array(data_train)
     na_data_valid = np.array(data_valid)
@@ -156,9 +151,9 @@ def setup(class_num, ml_data, ml_label):
     print(na_data_train.shape, na_data_train[0].shape)
 
     # 2次元配列を1次元に変換
-    na_data_train = na_data_train.reshape(na_data_train.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
-    na_data_valid = na_data_valid.reshape(na_data_valid.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
-    na_data_test = na_data_test.reshape(na_data_test.shape[0], IMAGE_SIZE_PX, IMAGE_SIZE_PX, 1)
+    na_data_train = na_data_train.reshape(na_data_train.shape[0], config["image_size_px"], config["image_size_px"], 1)
+    na_data_valid = na_data_valid.reshape(na_data_valid.shape[0], config["image_size_px"], config["image_size_px"], 1)
+    na_data_test = na_data_test.reshape(na_data_test.shape[0], config["image_size_px"], config["image_size_px"], 1)
 
     # int型をfloat32型に変換
     na_data_train = na_data_train.astype('float32')
@@ -191,11 +186,11 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
 
     lr_decay = LearningRateScheduler(step_decay)
 
-    early_stopping = EarlyStopping(
-        monitor='val_loss',
-        min_delta=0.0,
-        patience=3
-    )
+    # early_stopping = EarlyStopping(
+    #     monitor='val_loss',
+    #     min_delta=0.0,
+    #     patience=3
+    # )
 
     modelCheckpoint = ModelCheckpoint(filepath=checkpoint_file_path,
                                       monitor='val_loss',
@@ -206,13 +201,13 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                                       period=1)
 
     # adam = Adam(lr=0.0001)
-    sdg = SGD(lr=LEARNING_RATE, momentum=0.9, decay=1e-4, nesterov=False)
+    sdg = SGD(lr=config["learning_rate"], momentum=0.9, decay=1e-4, nesterov=False)
     model.compile(loss='categorical_crossentropy',
                   optimizer=sdg,
                   metrics=['accuracy'])
     history = model.fit(na_data_train, label_train_classes,
-                        epochs=EPOCHS,
-                        batch_size=BATCH_SIZE,
+                        epochs=config["epochs"],
+                        batch_size=config["batch_size"],
                         verbose=1,
                         validation_data=(na_data_valid, label_valid_classes),
                         callbacks=[lr_decay, modelCheckpoint])

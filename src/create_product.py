@@ -11,8 +11,9 @@ from lib import fs
 
 
 CLIP_TARGET_FOLDER_NAMES = ["s1", "s2", "band"]
-REJECTED_CHARACTER_NAMES = ["background", "moyo", "logo"]
-JOB_NUM = 2
+REJECTED_CHARACTOR_NAMES = ["background", "moyo", "logo"]
+AVAILABLE_CHARACTOR_NAMES = ["sayo", "hina", "tsugumi", "kokoro"]
+JOB_NUM = len(CLIP_TARGET_FOLDER_NAMES)
 FRAME_WIDTH = 1920
 FRAME_HEIGHT = 1080
 VIDEO_CODEC = "h264_nvenc"  # GPU
@@ -21,7 +22,7 @@ AUDIO_CODEC = "aac"
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "04.product")
 output_dir = os.path.join(resource_dir, "movies")
-input_dir = os.path.join(cwd, "99.movie_fps", "crop_movies")
+input_dir = os.path.join(cwd, "03.movie", "crop_movies")
 
 
 def concat_movies(movie_file_pathes, dst):
@@ -31,7 +32,6 @@ def concat_movies(movie_file_pathes, dst):
         clip = VideoFileClip(path)
         print(clip.w, clip.h, clip.w != FRAME_WIDTH)
         if clip.w != FRAME_WIDTH or clip.h != FRAME_HEIGHT:
-            # clip.resize(width=1920, height=1080)
             clip = resize(clip, (FRAME_WIDTH, FRAME_HEIGHT))
         clips.append(clip)
     final_clip = concatenate_videoclips(clips)
@@ -65,22 +65,27 @@ def prepare(charactor_name):
 
 def main():
     charactor_dirs = fs.list_dirs(input_dir)
-    for charactor_name in tqdm(charactor_dirs):
+    pbar = tqdm(charactor_dirs)
+    for charactor_name in pbar:
         print("CHARACTOR -> ", charactor_name)
-        if charactor_name in REJECTED_CHARACTER_NAMES:
+        if len(REJECTED_CHARACTOR_NAMES) > 0 and charactor_name in REJECTED_CHARACTOR_NAMES:
+            pbar.update(1)
+            continue
+        if len(AVAILABLE_CHARACTOR_NAMES) > 0 and charactor_name not in AVAILABLE_CHARACTOR_NAMES:
+            pbar.update(1)
             continue
         chara_dir = prepare(charactor_name)
-        # joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
-        #     movie_file_pathes=fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),
-        #     chara_dir=chara_dir,
-        #     series_name=series_name
-        # ) for series_name in CLIP_TARGET_FOLDER_NAMES])
-        for series_name in CLIP_TARGET_FOLDER_NAMES:
-            process(
-                fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),
-                chara_dir,
-                series_name
-            )
+        joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
+            movie_file_pathes=fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),
+            chara_dir=chara_dir,
+            series_name=series_name
+        ) for series_name in CLIP_TARGET_FOLDER_NAMES])
+        # for series_name in CLIP_TARGET_FOLDER_NAMES:
+        #     process(
+        #         fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),
+        #         chara_dir,
+        #         series_name
+        #     )
 
 
 if __name__ == "__main__":
