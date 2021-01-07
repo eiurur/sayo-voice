@@ -22,8 +22,8 @@ config_file = open(config_file_path, 'r')
 config = json.load(config_file)
 
 
-def concat_movies(movie_file_pathes, dst):
-    print(movie_file_pathes, dst)
+def concat_movies(movie_file_pathes):
+    print(movie_file_pathes)
     clips = []
     for path in movie_file_pathes:
         clip = VideoFileClip(path)
@@ -81,7 +81,7 @@ def main():
         if len(config["rejected_charactors"]) > 0 and charactor_name in config["rejected_charactors"]:
             pbar.update(1)
             continue
-        if len(config["availbable_charactors"]) > 0 and charactor_name not in config["availbable_charactors"]:
+        if len(config["available_charactors"]) > 0 and charactor_name not in config["available_charactors"]:
             pbar.update(1)
             continue
         chara_dir = prepare(charactor_name)

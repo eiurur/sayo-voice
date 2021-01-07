@@ -30,7 +30,7 @@ def process(src_movie_path):
         pid = cp._identity[0]
         movie_clipper = MovieClipper(src_movie_path, SKIP_FRAME_INTEVAL, pid)
         movie_clipper.output_dir = clip_output_dir
-        if movie_clipper.isCompltedClip(cache_filepath):
+        if movie_clipper.is_completed_clip(cache_filepath):
             return
         movie_clipper.capture(pid)
         movie_clipper.caching_to(cache_filepath)
