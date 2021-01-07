@@ -13,7 +13,7 @@ class Movie:
         self.skip = skip or 3
         self.records = records
 
-    def isCompltedClip(self):
+    def is_completed_clip(self):
         bool = False
         for record in self.records:
             dir_path = record.dir_format.format(record.get_label_name())

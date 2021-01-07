@@ -28,7 +28,7 @@ class MovieClipper:
         with open(cache_filepath, mode='a') as f:
             f.write(f"\n{key}")
 
-    def isCompltedClip(self, cache_filepath):
+    def is_completed_clip(self, cache_filepath):
         bool = False
 
         if not os.path.isfile(cache_filepath):

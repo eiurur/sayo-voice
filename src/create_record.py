@@ -44,7 +44,7 @@ def process(src_movie_path, record_dir_format, class_mapping):
             record.prepare()
             records.append(record)
         movie = Movie(src_movie_path, config["skip_frame_interval"], records)
-        if movie.isCompltedClip():
+        if movie.is_completed_clip():
             return
         movie.capture()
         movie.write_period_to_file()
