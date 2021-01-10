@@ -9,8 +9,9 @@
 - Anaconda3
   - Python 3.8
 - CUDA Toolkit 11.1
-- cuDNN 8
+- cuDNN SDK 8
 - NVIDIA GPU Driver 460.x
+  - detail: [GPU Support  \|  TensorFlow](https://www.tensorflow.org/install/gpu?hl=ja#software_requirements)
 
 ## セットアップ
 
