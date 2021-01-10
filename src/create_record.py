@@ -29,7 +29,7 @@ config = json.load(config_file)
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
-def process(src_movie_path, record_dir_format, class_mapping):
+def process(movie_path, record_dir_format, class_mapping):
     try:
         records = []
         for label in class_mapping.items():
@@ -43,13 +43,13 @@ def process(src_movie_path, record_dir_format, class_mapping):
             record.px = config["image_size_px"]
             record.prepare()
             records.append(record)
-        movie = Movie(src_movie_path, config["skip_frame_interval"], records)
+        movie = Movie(movie_path, config["skip_frame_interval"], records)
         if movie.is_completed_clip():
             return
         movie.capture()
         movie.write_period_to_file()
     except Exception as e:
-        print("record ERROR: ", src_movie_path)
+        print("record ERROR: ", movie_path)
         print(e)
         print(traceback.format_exc())
 
@@ -61,7 +61,7 @@ def main():
         movies = fs.list_entries(os.path.join(movie_dir, series_name))
         params = [(movie, record_dir_format) for movie in movies]
         joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
-            src_movie_path=param[0],
+            movie_path=param[0],
             record_dir_format=param[1],
             class_mapping=class_mapping
         ) for param in params])

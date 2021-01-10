@@ -7,8 +7,8 @@ from . import fs
 
 
 class MovieClipper:
-    def __init__(self, src_movie_path, skip, pid):
-        self.src_movie_path = src_movie_path
+    def __init__(self, movie_path, skip, pid):
+        self.movie_path = movie_path
         self.skip = skip or 3
         self.pid = pid
 
@@ -21,7 +21,7 @@ class MovieClipper:
         self.__output_dir = output_dir
 
     def get_movie_file_name(self):
-        return os.path.splitext(os.path.basename(self.src_movie_path))[0]
+        return os.path.splitext(os.path.basename(self.movie_path))[0]
 
     def caching_to(self, cache_filepath):
         key = self.get_movie_file_name()
@@ -62,10 +62,10 @@ class MovieClipper:
             return False
 
     def capture(self, pid):
-        cap = cv2.VideoCapture(self.src_movie_path)
+        cap = cv2.VideoCapture(self.movie_path)
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = int(cap.get(cv2.CAP_PROP_FPS))
-        print("PATH: ", self.src_movie_path)
+        print("PATH: ", self.movie_path)
         print("FRAME_COUNT: ", frame_count)
         print("FPS: ", fps)
 

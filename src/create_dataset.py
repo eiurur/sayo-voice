@@ -24,18 +24,18 @@ clip_output_dir = os.path.join(resource_dir, "inbox")
 movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 
 
-def process(src_movie_path):
+def process(movie_path):
     try:
         cp = current_process()
         pid = cp._identity[0]
-        movie_clipper = MovieClipper(src_movie_path, SKIP_FRAME_INTEVAL, pid)
+        movie_clipper = MovieClipper(movie_path, SKIP_FRAME_INTEVAL, pid)
         movie_clipper.output_dir = clip_output_dir
         if movie_clipper.is_completed_clip(cache_filepath):
             return
         movie_clipper.capture(pid)
         movie_clipper.caching_to(cache_filepath)
     except Exception as e:
-        print("process ERROR: ", src_movie_path)
+        print("process ERROR: ", movie_path)
         print(e)
         print(traceback.format_exc())
 
@@ -44,7 +44,7 @@ def main():
     for series_name in tqdm(CLIP_TARGET_FOLDER_NAMES):
         movie_pathes = fs.list_entries(os.path.join(movie_dir, series_name))
         joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
-            src_movie_path=movie_path
+            movie_path=movie_path
         ) for movie_path in movie_pathes])
 
 
