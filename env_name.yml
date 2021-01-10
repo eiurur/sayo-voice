@@ -333,4 +333,5 @@ dependencies:
     - tf-estimator-nightly==2.5.0.dev2020122701
     - tf-nightly-gpu==2.5.0.dev20201227
     - wrapt==1.12.1
+    - youtube-dl==2021.1.8
 prefix: C:\Users\eiuru\anaconda3\envs\py38
