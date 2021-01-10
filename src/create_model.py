@@ -6,6 +6,7 @@ import cv2
 import os
 import math
 import json
+import shutil
 import numpy as np
 from datetime import datetime
 from sklearn.model_selection import train_test_split
@@ -27,6 +28,7 @@ cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "01.model")
 input_data_dir_path = os.path.join(resource_dir, "input")
 train_data_dir_path = os.path.join(resource_dir, "train")
+dataset_dir_path = os.path.join(cwd, "00.dataset", "classification")
 class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json")
 model_file_path = os.path.join(cwd.parent, "model", "model.h5")
 checkpoint_file_path = os.path.join(cwd.parent, "model", "checkpoint.h5")
@@ -38,11 +40,28 @@ config = json.load(config_file)
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
+def prepare(dataset_dir_path, input_data_dir_path):
+    if os.path.exists(input_data_dir_path):
+        return
+    os.makedirs(input_data_dir_path, exist_ok=True)
+    classification_dirs = fs.list_entries(dataset_dir_path)
+    for classification_dir in classification_dirs:
+        dirname = os.path.basename(classification_dir)
+        if dirname.startswith("_"):
+            continue
+        src = classification_dir
+        dst = os.path.join(input_data_dir_path, dirname)
+        shutil.copytree(src, dst)
+
+
 def make_classes(dir):
     dirs = [os.path.join(dir, p.name) for p in os.scandir(dir)]
     class_pathes = []
     for d in dirs:
-        class_pathes += [os.path.join(d, p.name) for p in os.scandir(d)]
+        if os.path.isdir(d):
+            class_pathes += [d]
+        else:
+            class_pathes += [os.path.join(d, p.name) for p in os.scandir(d)]
     ret = []
     for class_path in class_pathes:
         ret.append({
@@ -222,6 +241,7 @@ def evaluate(model, na_data_test, label_test_classes):
 
 
 def main():
+    prepare(dataset_dir_path, input_data_dir_path)
     classes = make_classes(input_data_dir_path)
     train_data = make_train_data(classes)
     ml_data, ml_label = preprocess(classes, train_data)
