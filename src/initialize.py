@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 DOWNLOADING_PLAYLIST_MAP = {
-    "s1": "PL_-PeRPsOsKLQNENQVw7E96fozDaZIs16",
+    "s1": "PL_-PeRPsOsKLGsG8u6f0P5XVCANWZM6mY",
     "s2": "PL_-PeRPsOsKLs2v8TpWZfJlZ7aic8TFsg",
     "band": "PL_-PeRPsOsKLQNENQVw7E96fozDaZIs16"
 }
