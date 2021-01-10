@@ -5,7 +5,6 @@
 import cv2
 import os
 import math
-import json
 import shutil
 import numpy as np
 from datetime import datetime
@@ -34,8 +33,8 @@ model_file_path = os.path.join(cwd.parent, "model", "model.h5")
 checkpoint_file_path = os.path.join(cwd.parent, "model", "checkpoint.h5")
 config_file_path = os.path.join(cwd.parent, "config.json")
 
-config_file = open(config_file_path, 'r')
-config = json.load(config_file)
+config = fs.load_json(config_file_path)
+
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 

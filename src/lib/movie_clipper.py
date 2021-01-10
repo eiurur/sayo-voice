@@ -14,10 +14,9 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 class MovieClipper:
-    def __init__(self, movie_path, skip, pid):
+    def __init__(self, movie_path, skip):
         self.movie_path = movie_path
         self.skip = skip or 3
-        self.pid = pid
 
     @property
     def output_dir(self):
@@ -92,7 +91,7 @@ class MovieClipper:
         return None
 
     def clip_frame(self, crop, name):
-        crop_image_path = os.path.join(self.__output_dir, name, fs.add_prefix_to('{}.png'.format(self.pid)))
+        crop_image_path = os.path.join(self.__output_dir, name, fs.add_prefix_to('{}.png'.format(name)))
         os.makedirs(os.path.dirname(crop_image_path), exist_ok=True)
         try:
             cv2.imwrite(crop_image_path, crop)
@@ -100,7 +99,7 @@ class MovieClipper:
             print("imwrite ERROR: ", crop_image_path)
             return False
 
-    def capture(self, pid):
+    def capture(self):
         cap = cv2.VideoCapture(self.movie_path)
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = int(cap.get(cv2.CAP_PROP_FPS))

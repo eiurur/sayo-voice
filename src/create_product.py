@@ -1,8 +1,6 @@
 import os
 import traceback
 import joblib
-import json
-import time
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -19,8 +17,7 @@ output_dir = os.path.join(resource_dir, "movies")
 input_dir = os.path.join(cwd, "03.movie", "crop_movies")
 config_file_path = os.path.join(cwd.parent, "config.json")
 
-config_file = open(config_file_path, 'r')
-config = json.load(config_file)
+config = fs.load_json(config_file_path)
 
 
 def concat_movies(movie_file_pathes):
@@ -44,7 +41,7 @@ def export_video(clip, dst):
 
 
 def export_audio(clip, dst):
-    clip.audio = clip.audio.set_fps(clip.audio.fps) # NOTE: https://github.com/Zulko/moviepy/issues/1247
+    clip.audio = clip.audio.set_fps(clip.audio.fps)  # NOTE: https://github.com/Zulko/moviepy/issues/1247
     clip.audio.write_audiofile(dst)
 
 

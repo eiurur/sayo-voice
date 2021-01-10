@@ -4,7 +4,6 @@
 import os
 import traceback
 import joblib
-import json
 from pathlib import Path
 from datetime import datetime
 
@@ -23,8 +22,7 @@ class_mapping_file_path = os.path.join(cwd.parent, "model", "class_mapping.json"
 model_file_path = os.path.join(cwd.parent, "model", "model.h5")
 config_file_path = os.path.join(cwd.parent, "config.json")
 
-config_file = open(config_file_path, 'r')
-config = json.load(config_file)
+config = fs.load_json(config_file_path)
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 

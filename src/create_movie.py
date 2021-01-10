@@ -2,7 +2,6 @@ import os
 import traceback
 import joblib
 import math
-import json
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -18,8 +17,7 @@ crop_dir = os.path.join(resource_dir, "crop_movies")
 record_dir = os.path.join(cwd, "02.record", "records")
 config_file_path = os.path.join(cwd.parent, "config.json")
 
-config_file = open(config_file_path, 'r')
-config = json.load(config_file)
+config = fs.load_json(config_file_path)
 
 
 def calc_elapsed_time(frame, fps):
