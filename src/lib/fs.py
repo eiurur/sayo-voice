@@ -42,12 +42,12 @@ def add_prefix_to(filename):
 
 
 def write_json(file_path, data):
-    with open(file_path, 'w') as outfile:
-        json.dump(data, outfile, indent=4)
+    with open(file_path, 'w', encoding='utf-8') as outfile:
+        json.dump(data, outfile, indent=4, ensure_ascii=False)
 
 
 def load_json(file_path):
-    with open(file_path, "r") as json_file:
+    with open(file_path, "r", encoding="utf-8") as json_file:
         json_data = json.load(json_file)
         return json_data
     return None
