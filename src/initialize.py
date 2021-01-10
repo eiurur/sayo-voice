@@ -5,7 +5,6 @@ import os
 import traceback
 import joblib
 import youtube_dl
-from tqdm import tqdm
 from datetime import datetime
 from pathlib import Path
 
@@ -17,12 +16,8 @@ DOWNLOADING_PLAYLIST_MAP = {
     "main": "PL_-PeRPsOsKK0IHPDktxYxHRV2kzBIyEw"
 }
 JOB_NUM = 3
-SKIP_FRAME_INTEVAL = 180
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
-resource_dir = os.path.join(cwd, "00.dataset")
-cache_filepath = os.path.join(resource_dir, "cache.txt")
-clip_output_dir = os.path.join(resource_dir, "inbox")
 movie_dir = os.path.join(cwd.parent, "assets", 'movies')
 
 
@@ -36,7 +31,7 @@ def download(dir_name, playlist_name):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.extract_info(
             playlist_name,
-            download=True  # We just want to extract the info
+            download=True
         )
     print("Downloading {name} finish!".format(name=playlist_name))
 
