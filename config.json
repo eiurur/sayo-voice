@@ -7,7 +7,7 @@
     "frame_width": 1920,
     "frame_height": 1080,
     "skip_frame_interval": 3,
-    "video_codec": "h264_nvenc",
+    "video_codec": "libx264",
     "audio_codec": "aac",
     "batch_size": 12,
     "epochs": 30,
