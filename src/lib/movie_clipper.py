@@ -1,9 +1,16 @@
-
+import copy
 import os
+import traceback
 import cv2
 from tqdm import tqdm
+import numpy as np
 
 from . import fs
+from .image import Image
+
+INBOX_FOLDER_NAME = "_others_"
+
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 class MovieClipper:
@@ -16,9 +23,41 @@ class MovieClipper:
     def output_dir(self):
         pass
 
+    @property
+    def model(self):
+        pass
+
+    @property
+    def class_mapping(self):
+        pass
+
+    @property
+    def threshold(self):
+        pass
+
+    @property
+    def px(self):
+        pass
+
     @output_dir.setter
     def output_dir(self, output_dir):
         self.__output_dir = output_dir
+
+    @model.setter
+    def model(self, model):
+        self.__model = model
+
+    @class_mapping.setter
+    def class_mapping(self, class_mapping):
+        self.__class_mapping = class_mapping
+
+    @threshold.setter
+    def threshold(self, threshold):
+        self.__threshold = threshold
+
+    @px.setter
+    def px(self, px):
+        self.__px = px
 
     def get_movie_file_name(self):
         return os.path.splitext(os.path.basename(self.movie_path))[0]
@@ -52,8 +91,8 @@ class MovieClipper:
             return resized[775:850, 220:615]
         return None
 
-    def clip_frame(self, crop):
-        crop_image_path = os.path.join(self.__output_dir, fs.add_prefix_to('{}.png'.format(self.pid)))
+    def clip_frame(self, crop, name):
+        crop_image_path = os.path.join(self.__output_dir, name, fs.add_prefix_to('{}.png'.format(self.pid)))
         os.makedirs(os.path.dirname(crop_image_path), exist_ok=True)
         try:
             cv2.imwrite(crop_image_path, crop)
@@ -87,5 +126,45 @@ class MovieClipper:
                 pbar.update(1)
                 break
 
-            self.clip_frame(crop)
+            try:
+                image = Image()
+                image.set_image(crop)
+                pred_class, pred_proba = self.predict(image)
+                print(pred_class, pred_proba)
+                if crop is None:
+                    pbar.update(1)
+                    break
+
+                name = INBOX_FOLDER_NAME
+                if pred_proba >= self.__threshold:
+                    name = self.__class_mapping.get(str(pred_class))
+                print(name)
+                self.clip_frame(crop, name)
+            except Exception as e:
+                print(traceback.format_exc())
+                pbar.update(1)
+                continue
         cap.release()
+
+    def __predict(self, im):
+        img_predict = [im]
+        data_predict = np.asarray(img_predict)
+        data_predict = data_predict.reshape(data_predict.shape[0], self.__px, self.__px, 1)
+        data_predict = data_predict.astype('float32')
+        data_predict /= 255
+
+        predictions = self.__model.predict(data_predict)
+        pred_class = predictions.argmax()
+        pred_proba = predictions[0][pred_class] * 100
+        return pred_class, pred_proba
+
+    def predict(self, im):
+        try:
+            _im = copy.deepcopy(im)
+            _im.transform_image_for_predict_with(self.__px)
+            pred_class, pred_proba = self.__predict(_im.get_image())
+            return pred_class, pred_proba
+        except Exception as e:
+            print(e)
+            print(traceback.format_exc())
+            return None, None
