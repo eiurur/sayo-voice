@@ -2,6 +2,7 @@ import os
 import traceback
 import joblib
 import json
+import time
 from tqdm import tqdm
 from datetime import datetime
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -43,6 +44,7 @@ def export_video(clip, dst):
 
 
 def export_audio(clip, dst):
+    clip.audio = clip.audio.set_fps(clip.audio.fps) # NOTE: https://github.com/Zulko/moviepy/issues/1247
     clip.audio.write_audiofile(dst)
 
 
@@ -50,14 +52,17 @@ def process(movie_file_pathes, chara_dir, series_name):
     try:
         if len(movie_file_pathes) == 0:
             return
+
         dst_video = os.path.join(chara_dir, f"{series_name}.mp4")
-        dst_audio = os.path.join(chara_dir, f"{series_name}.mp3")
         if os.path.exists(dst_video):
             clip = VideoFileClip(dst_video)
         else:
             clip = concat_movies(movie_file_pathes)
         if not os.path.exists(dst_video):
             export_video(clip, dst_video)
+        fs.wait_until_generated(dst_video)
+
+        dst_audio = os.path.join(chara_dir, f"{series_name}.mp3")
         if not os.path.exists(dst_audio):
             export_audio(clip, dst_audio)
     except Exception as e:

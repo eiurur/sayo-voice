@@ -59,23 +59,21 @@ def clip_movie(movie_file_path, clips, dst, src_record_path):
 
 def process(src_record_path, chara_crop_dir):
     try:
-        with open(src_record_path, encoding='UTF-8') as f:
-            lines = f.readlines()
-            movie_raw_file_path = lines[0].strip()
-            movie_encoded_file_name = lines[1].strip()
+        record_info = fs.load_json(src_record_path)
+        movie_raw_file_path = record_info["movie_path"]
+        movie_encoded_file_name = record_info["hashed_filename"]
+        clips = record_info["periods"]
+        if len(clips) == 0:
+            return
 
-            clips = list(map(lambda x: x.strip(), lines[2:]))
-            if len(clips) == 0:
-                return
+        dst = os.path.join(chara_crop_dir, movie_encoded_file_name)
+        if os.path.exists(dst):
+            return
 
-            dst = os.path.join(chara_crop_dir, movie_encoded_file_name)
-            if os.path.exists(dst):
-                return
-
-            clip_movie(movie_raw_file_path, clips, dst, src_record_path)
+        print(movie_raw_file_path)
+        clip_movie(movie_raw_file_path, clips, dst, src_record_path)
     except Exception as e:
         print("process ERROR: ", src_record_path)
-        print(e)
         print(traceback.format_exc())
 
 

@@ -18,7 +18,7 @@ class Movie:
         for record in self.records:
             dir_path = record.dir_format.format(record.get_label_name())
             movie_file_name_without_ext = fs.get_filename_without_ext(self.movie_path)
-            record_file = os.path.join(dir_path, "{}.txt".format(movie_file_name_without_ext))
+            record_file = os.path.join(dir_path, "{}.json".format(movie_file_name_without_ext))
             if os.path.exists(record_file):
                 bool = True
                 break
@@ -77,8 +77,12 @@ class Movie:
         for record in self.records:
             [filename, ext] = fs.get_filename_and_ext(self.movie_path)
             hs = hashlib.md5(filename.encode()).hexdigest()
-            ascii_filename = "{}{}".format(hs, ext)
+            hashed_filename = "{}{}".format(hs, ext)
             config_data = record.get_config_data()
-            prefix_data = [self.movie_path, ascii_filename] + config_data
+            record_info = {
+                "movie_path": self.movie_path,
+                "hashed_filename": hashed_filename,
+                "config_data": config_data
+            }
             movie_file_name_without_ext = fs.get_filename_without_ext(self.movie_path)
-            record.write_to_file(prefix_data, movie_file_name_without_ext)
+            record.write_to_file(record_info, movie_file_name_without_ext)

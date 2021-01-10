@@ -3,6 +3,8 @@ import math
 import os
 import numpy as np
 
+from . import fs
+
 
 class Record:
     def __init__(self):
@@ -66,7 +68,11 @@ class Record:
         return name
 
     def get_config_data(self):
-        return [self.__threshold, self.__skip_frame_interval, self.__px]
+        return {
+            "threshold": str(self.__threshold),
+            "skip_frame_interval": str(self.__skip_frame_interval),
+            "image_size_px": str(self.__px),
+        }
 
     def __predict(self, im):
         img_predict = [im]
@@ -112,15 +118,13 @@ class Record:
         os.makedirs(c_dir, exist_ok=True)
         im.write_to(os.path.join(c_dir, filename))
 
-    def write_to_file(self, prefix_data, movie_file_name_without_ext):
-        if prefix_data is None:
-            prefix_data = []
+    def write_to_file(self, record_info, movie_file_name_without_ext):
+        if record_info is None:
+            record_info = {}
 
         dir_path = self.__dir_format.format(self.get_label_name())
-        record_file = os.path.join(dir_path, "{}.txt".format(movie_file_name_without_ext))
+        record_file = os.path.join(dir_path, "{}.json".format(movie_file_name_without_ext))
         if os.path.exists(record_file):
             return
-
-        data = prefix_data + self.periods
-        with open(record_file, "w", encoding='UTF-8') as f:
-            f.write('\n'.join(data))
+        record_info["periods"] = self.periods
+        fs.write_json(record_file, record_info)
