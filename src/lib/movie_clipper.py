@@ -58,11 +58,8 @@ class MovieClipper:
     def px(self, px):
         self.__px = px
 
-    def get_movie_file_name(self):
-        return os.path.splitext(os.path.basename(self.movie_path))[0]
-
     def caching_to(self, cache_filepath):
-        key = self.get_movie_file_name()
+        key = fs.get_filename_without_ext(self.movie_path)
         with open(cache_filepath, mode='a') as f:
             f.write(f"\n{key}")
 
@@ -74,7 +71,7 @@ class MovieClipper:
 
         with open(cache_filepath) as f:
             lines = f.readlines()
-            key = self.get_movie_file_name()
+            key = fs.get_filename_without_ext(self.movie_path)
             if key in lines:
                 bool = True
 
@@ -164,6 +161,5 @@ class MovieClipper:
             pred_class, pred_proba = self.__predict(_im.get_image())
             return pred_class, pred_proba
         except Exception as e:
-            print(e)
             print(traceback.format_exc())
             return None, None
