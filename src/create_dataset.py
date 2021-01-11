@@ -10,6 +10,7 @@ from pathlib import Path
 
 from lib import fs
 from lib.movie_clipper import MovieClipper
+from lib.predictor import Predictor
 
 from tensorflow import keras
 
@@ -35,8 +36,8 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 def process(movie_path, output_dir, class_mapping):
     try:
         model = keras.models.load_model(model_file_path, compile=False)
-        movie_clipper = MovieClipper(movie_path, SKIP_FRAME_INTEVAL)
-        movie_clipper.model = model
+        predictor = Predictor(model, config["image_size_px"])
+        movie_clipper = MovieClipper(movie_path, SKIP_FRAME_INTEVAL, predictor)
         movie_clipper.threshold = THRESHOLD
         movie_clipper.px = config["image_size_px"]
         movie_clipper.output_dir = output_dir

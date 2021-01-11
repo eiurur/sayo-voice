@@ -14,16 +14,13 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 class MovieClipper:
-    def __init__(self, movie_path, skip):
+    def __init__(self, movie_path, skip, predictor):
         self.movie_path = movie_path
         self.skip = skip or 3
+        self.predictor = predictor
 
     @property
     def output_dir(self):
-        pass
-
-    @property
-    def model(self):
         pass
 
     @property
@@ -34,17 +31,9 @@ class MovieClipper:
     def threshold(self):
         pass
 
-    @property
-    def px(self):
-        pass
-
     @output_dir.setter
     def output_dir(self, output_dir):
         self.__output_dir = output_dir
-
-    @model.setter
-    def model(self, model):
-        self.__model = model
 
     @class_mapping.setter
     def class_mapping(self, class_mapping):
@@ -53,10 +42,6 @@ class MovieClipper:
     @threshold.setter
     def threshold(self, threshold):
         self.__threshold = threshold
-
-    @px.setter
-    def px(self, px):
-        self.__px = px
 
     def caching_to(self, cache_filepath):
         key = fs.get_filename_without_ext(self.movie_path)
@@ -94,7 +79,6 @@ class MovieClipper:
             cv2.imwrite(crop_image_path, crop)
         except Exception as e:
             print("imwrite ERROR: ", crop_image_path)
-            return False
 
     def capture(self):
         cap = cv2.VideoCapture(self.movie_path)
@@ -125,7 +109,7 @@ class MovieClipper:
             try:
                 image = Image()
                 image.set_image(crop)
-                pred_class, pred_proba = self.predict(image)
+                pred_class, pred_proba = self.predictor.predict(image)
                 print(pred_class, pred_proba)
                 if crop is None:
                     pbar.update(1)
@@ -141,25 +125,3 @@ class MovieClipper:
                 pbar.update(1)
                 continue
         cap.release()
-
-    def __predict(self, im):
-        img_predict = [im]
-        data_predict = np.asarray(img_predict)
-        data_predict = data_predict.reshape(data_predict.shape[0], self.__px, self.__px, 1)
-        data_predict = data_predict.astype('float32')
-        data_predict /= 255
-
-        predictions = self.__model.predict(data_predict)
-        pred_class = predictions.argmax()
-        pred_proba = predictions[0][pred_class] * 100
-        return pred_class, pred_proba
-
-    def predict(self, im):
-        try:
-            _im = copy.deepcopy(im)
-            _im.transform_image_for_predict_with(self.__px)
-            pred_class, pred_proba = self.__predict(_im.get_image())
-            return pred_class, pred_proba
-        except Exception as e:
-            print(traceback.format_exc())
-            return None, None

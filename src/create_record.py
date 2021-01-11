@@ -10,6 +10,7 @@ from datetime import datetime
 from lib import fs
 from lib.record import Record
 from lib.movie import Movie
+from lib.predictor import Predictor
 
 from tensorflow import keras
 
@@ -31,17 +32,17 @@ def process(movie_path, record_dir_format, class_mapping):
     try:
         records = []
         for label in class_mapping.items():
-            model = keras.models.load_model(model_file_path, compile=False)
             record = Record()
             record.dir_format = record_dir_format
             record.label = label
             record.threshold = config["threshold"]
             record.skip_frame_interval = config["skip_frame_interval"]
-            record.model = model
-            record.px = config["image_size_px"]
             record.prepare()
             records.append(record)
-        movie = Movie(movie_path, config["skip_frame_interval"], records)
+
+        model = keras.models.load_model(model_file_path, compile=False)
+        predictor = Predictor(model, config["image_size_px"])
+        movie = Movie(movie_path, config["skip_frame_interval"], records, predictor)
         if movie.is_completed_clip():
             return
         movie.capture()

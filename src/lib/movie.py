@@ -1,5 +1,6 @@
 import os
 import cv2
+import traceback
 import hashlib
 from tqdm import tqdm
 
@@ -8,15 +9,16 @@ from .image import Image
 
 
 class Movie:
-    def __init__(self, movie_path, skip, records):
+    def __init__(self, movie_path, skip, records, predictor):
         self.movie_path = movie_path
         self.skip = skip or 3
         self.records = records
+        self.predictor = predictor
 
     def is_completed_clip(self):
         bool = False
         for record in self.records:
-            dir_path = record.dir_format.format(record.get_label_name())
+            dir_path = record.get_dir_path()
             movie_file_name_without_ext = fs.get_filename_without_ext(self.movie_path)
             record_file = os.path.join(dir_path, "{}.json".format(movie_file_name_without_ext))
             if os.path.exists(record_file):
@@ -59,30 +61,27 @@ class Movie:
             if crop is None:
                 pbar.update(1)
                 break
-
             try:
                 image = Image()
                 image.set_image(crop)
-                head = self.records[0]
-                pred_class, pred_proba = head.predict(image)
+                pred_class, pred_proba = self.predictor.predict(image)
                 for record in self.records:
                     record.record(frame_idx, image, pred_class, pred_proba)
             except Exception as e:
-                print(e)
+                print(traceback.format_exc())
                 pbar.update(1)
                 continue
         cap.release()
 
     def write_period_to_file(self):
+        [filename, ext] = fs.get_filename_and_ext(self.movie_path)
+        hash_code = hashlib.md5(filename.encode()).hexdigest()
+        hashed_filename = "{}{}".format(hash_code, ext)
         for record in self.records:
-            [filename, ext] = fs.get_filename_and_ext(self.movie_path)
-            hs = hashlib.md5(filename.encode()).hexdigest()
-            hashed_filename = "{}{}".format(hs, ext)
             config_data = record.get_config_data()
             record_info = {
                 "movie_path": self.movie_path,
                 "hashed_filename": hashed_filename,
                 "config_data": config_data
             }
-            movie_file_name_without_ext = fs.get_filename_without_ext(self.movie_path)
-            record.write_to_file(record_info, movie_file_name_without_ext)
+            record.write_to_file(record_info, filename)
