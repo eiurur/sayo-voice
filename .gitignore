@@ -212,3 +212,5 @@ geckodriver.log
 src/00.dataset/cache.txt
 .tmp/
 crop.jpg
+src/02.record/records - コピー/
+src/02.record/records/
