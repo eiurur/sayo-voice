@@ -13,7 +13,9 @@ DOWNLOADING_PLAYLIST_MAP = {
     "s1": "PL_-PeRPsOsKLGsG8u6f0P5XVCANWZM6mY",
     "s2": "PL_-PeRPsOsKLs2v8TpWZfJlZ7aic8TFsg",
     "band": "PL_-PeRPsOsKLQNENQVw7E96fozDaZIs16",
-    "main": "PL_-PeRPsOsKK0IHPDktxYxHRV2kzBIyEw"
+    "main": "PL_-PeRPsOsKK0IHPDktxYxHRV2kzBIyEw",
+    "area1": "PL_-PeRPsOsKLZH1dr2ohPfXuWIwzfuTn0",
+    "area2": "PL_-PeRPsOsKLlDGZWV72ukYtV1c50mw7O"
 }
 JOB_NUM = 3
 
