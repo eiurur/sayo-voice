@@ -70,7 +70,6 @@ class Movie:
             except Exception as e:
                 print(traceback.format_exc())
                 pbar.update(1)
-                continue
         cap.release()
 
     def write_period_to_file(self):
