@@ -218,9 +218,9 @@ def train(class_num, na_data_train, na_data_valid, label_train_classes, label_va
                                       mode='min',
                                       period=1)
 
-    sdg = SGD(lr=config["learning_rate"], momentum=0.9, decay=1e-4, nesterov=False)
+    sgd = SGD(lr=config["learning_rate"], momentum=0.9, decay=1e-4, nesterov=False)
     model.compile(loss='categorical_crossentropy',
-                  optimizer=sdg,
+                  optimizer=sgd,
                   metrics=['accuracy'])
     history = model.fit(na_data_train, label_train_classes,
                         epochs=config["epochs"],
