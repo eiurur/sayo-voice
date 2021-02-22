@@ -88,7 +88,7 @@ def main():
             continue
         chara_dir = prepare(charactor_name)
         joblib.Parallel(n_jobs=JOB_NUM)([joblib.delayed(process)(
-            movie_file_pathes=fs.list_entries(os.path.join(input_dir, charactor_name, series_name)),
+            movie_file_pathes=fs.list_files(os.path.join(input_dir, charactor_name, series_name)),
             chara_dir=chara_dir,
             series_name=series_name
         ) for series_name in config["folders"]])

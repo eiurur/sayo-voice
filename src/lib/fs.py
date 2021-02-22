@@ -21,7 +21,7 @@ def list_dirs(dir):
 def list_files(dir):
     if not os.path.exists(dir):
         return []
-    return [p.name for p in os.scandir(dir) if os.path.isfile(os.path.join(dir, p.name))]
+    return [os.path.join(dir, p.name) for p in os.scandir(dir) if os.path.isfile(os.path.join(dir, p.name))]
 
 
 def get_filename(p):
