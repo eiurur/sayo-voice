@@ -10,7 +10,7 @@ from pathlib import Path
 
 from lib import fs
 
-JOB_NUM = 4
+JOB_NUM = 1
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 resource_dir = os.path.join(cwd, "03.fragment_movie")
