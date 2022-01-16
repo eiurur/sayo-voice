@@ -41,7 +41,10 @@ def export_video(clip, dst):
 
 
 def export_audio(clip, dst):
-    clip.audio = clip.audio.set_fps(clip.audio.fps)  # NOTE: https://github.com/Zulko/moviepy/issues/1247
+    if hasattr(clip.audio, 'fps'):
+        clip.audio = clip.audio.set_fps(clip.audio.fps)  # NOTE: https://github.com/Zulko/moviepy/issues/1247
+    else:
+        clip.audio = clip.audio.set_fps(60) 
     clip.audio.write_audiofile(dst)
 
 
@@ -51,17 +54,20 @@ def process(movie_file_pathes, chara_dir, series_name):
             return
 
         dst_video = os.path.join(chara_dir, f"{series_name}.mp4")
+        print("export_video", dst_video)
         if os.path.exists(dst_video):
             clip = VideoFileClip(dst_video)
         else:
             clip = concat_movies(movie_file_pathes)
         if not os.path.exists(dst_video):
             export_video(clip, dst_video)
+            print("exported video", dst_video)
         fs.wait_until_generated(dst_video)
-
         dst_audio = os.path.join(chara_dir, f"{series_name}.mp3")
+        print("export audio", dst_audio)
         if not os.path.exists(dst_audio):
             export_audio(clip, dst_audio)
+            print("exported audio", dst_audio)
     except Exception as e:
         print("process ERROR: ", dst_video)
         print(e)
