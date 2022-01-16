@@ -65,6 +65,10 @@ class MovieClipper:
     def crop_name_area(self, frame):
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         (height, width) = rgb.shape[:2]
+        if height == 1080 and width == 2400:
+            padding = int((2400-1920)/2)
+            cropped = im.crop((padding, 0, 2400-padding, 1080))
+            return cropped[775:850, 220:615]
         if height == 1080 and width == 1920:
             return rgb[775:850, 220:615]
         if height == 720 and width == 1280:
