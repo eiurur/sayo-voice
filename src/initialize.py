@@ -4,20 +4,22 @@
 import os
 import traceback
 import joblib
-import youtube_dl
+import yt_dlp
 from datetime import datetime
 from pathlib import Path
 
 
 DOWNLOADING_PLAYLIST_MAP = {
-    "s1": "PL_-PeRPsOsKLGsG8u6f0P5XVCANWZM6mY",
-    "s2": "PL_-PeRPsOsKLs2v8TpWZfJlZ7aic8TFsg",
     "band": "PL_-PeRPsOsKLQNENQVw7E96fozDaZIs16",
-    "main": "PL_-PeRPsOsKK0IHPDktxYxHRV2kzBIyEw",
     "area1": "PL_-PeRPsOsKLZH1dr2ohPfXuWIwzfuTn0",
-    "area2": "PL_-PeRPsOsKLlDGZWV72ukYtV1c50mw7O"
+    "area2": "PL_-PeRPsOsKLlDGZWV72ukYtV1c50mw7O",
+    "kirafestival": "PL_-PeRPsOsKLWNPwK1jq0kuXTNOssnvSV",
+
+    "s2": "PL_-PeRPsOsKLs2v8TpWZfJlZ7aic8TFsg",
+    # "s1": "PL_-PeRPsOsKLGsG8u6f0P5XVCANWZM6mY",
+    # "main": "PL_-PeRPsOsKK0IHPDktxYxHRV2kzBIyEw",
 }
-JOB_NUM = 3
+JOB_NUM = 5
 
 cwd = Path(os.path.dirname(os.path.abspath(__file__)))
 movie_dir = os.path.join(cwd.parent, "assets", 'movies')
@@ -30,7 +32,7 @@ def download(dir_name, playlist_name):
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',
     }
     print("Downloading {name} start..".format(name=playlist_name))
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.extract_info(
             playlist_name,
             download=True
